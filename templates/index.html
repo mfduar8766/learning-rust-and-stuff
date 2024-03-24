@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=To, initial-scale=1.0" />
+    <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Todos</title>
+  </head>
+  <body style="height: 100%; width: 100%; margin: 0 auto">
+    <div class="container flex flex-col justify-center mx-auto w-full">
+      <h1>Todo List</h1>
+      <div
+        id="add-todo-form"
+        hx-targe="this"
+        hx-trigger="load"
+        hx-get="http://127.0.0.1:3000/views/add-todo-form"
+        hx-swap="outerHTML"
+      ></div>
+      <div class="container flex flex-row justify-start w-1/2">
+        <div
+          id="to-do-list"
+          hx-targe="this"
+          hx-trigger="load"
+          hx-get="http://127.0.0.1:3000/views/to-do-list"
+          hx-swap="outerHTML"
+        ></div>
+      </div>
+    </div>
+  </body>
+  <script src="index.js"></script>
+</html>
