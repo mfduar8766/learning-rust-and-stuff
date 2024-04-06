@@ -3,20 +3,38 @@ pub mod views {
     use askama::Template;
 
     #[derive(Template)]
+    #[template(path = "index2.html")]
+    pub struct IndexTemplateII {
+        pub state: String
+    }
+
+    #[derive(Template)]
+    #[template(path = "dashBoard.html")]
+    pub struct DashBoardTemplate {}
+
+    #[derive(Template)]
     #[template(path = "index.html")]
-    pub struct IndexTemplate {}
+    pub struct IndexTemplate<'a> {
+        pub todos: &'a Vec<Todos>
+    }
+
+    #[derive(Template)]
+    #[template(path = "login.html")]
+    pub struct LogInTemplate {}
 
     #[derive(Template)]
     #[template(path = "pageNotFound.html")]
     pub struct PageNotFoundTemplate {}
 
     #[derive(Template)]
-    #[template(path = "addToDo.html")]
-    pub struct AddToDosFormTemplate {}
+    #[template(path = "toDoListItem.html")]
+    pub struct ToDoListItem<'a> {
+        pub todo: &'a Todos,
+    }
 
     #[derive(Template)]
-    #[template(path = "toDoList.html")]
-    pub struct TodoListTemplate<'a> {
-        pub todos: &'a Vec<Todos>,
+    #[template(path = "error.html")]
+    pub struct ErrorTemplate {
+        pub message: String
     }
 }

@@ -1,19 +1,23 @@
 pub mod handlers {
     use crate::{
-        json_payload,
+        db, json_payload, renderers,
         state::{ApplicationState, StateNames},
-        todos,
+        todos, types,
+        utils::AsString,
+        views,
     };
+    use askama::Template;
     use axum::{
         extract::{Path, State},
         http::{HeaderMap, StatusCode},
-        response::IntoResponse,
+        response::{Html, IntoResponse},
         Form, Json,
     };
     use std::{
         mem::take,
         sync::{Arc, Mutex},
     };
+    use tracing::{info, warn};
 
     enum CustomHeaders {
         TodoStatus,
@@ -87,7 +91,7 @@ pub mod handlers {
                 Json(serde_json::json!({"status": "error","message": "id is empty"})),
             ));
         }
-        println!("Handlers::delete_todo()::id::{:?}", id);
+        info!("Handlers::delete_todo()::id::{:?}", id);
         // TODOS.lock().unwrap().delete_todo(id);
         state.lock().unwrap().todos.delete_todo(id);
         let payload_params = json_payload::json_payload::JsonPayloadParams::new(
@@ -101,7 +105,8 @@ pub mod handlers {
             std::option::Option::None,
             payload_params,
         );
-        Ok(Json(payload.create_json_payload()))
+        Ok(StatusCode::OK)
+        //Ok(Json(payload.create_json_payload()))
     }
 
     pub async fn update_todo(
@@ -157,24 +162,48 @@ pub mod handlers {
 
     pub async fn add_todos(
         State(state): State<Arc<Mutex<ApplicationState>>>,
+        mut headers: HeaderMap,
         Form(payload): Form<todos::AddTodos>,
-    ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-        println!("Handlers::add_todo()::payload: {:?}", payload);
+    ) -> types::AxumResponse {
+        info!("Handlers::add_todo()::payload: {:?}", payload);
         // let mut todo_lock = TODOS.lock().unwrap();
         let mut todo_lock = state.lock().unwrap();
         let new_todo = todo_lock.todos.add_todo(&payload.todo);
-        let payload_params = json_payload::json_payload::JsonPayloadParams::new(
-            std::option::Option::None,
-            std::option::Option::Some(new_todo),
-            std::option::Option::None,
-            std::option::Option::None,
-        );
-        let payload = json_payload::json_payload::JsonPayload::new(
-            format!("{}", StatusCode::CREATED),
-            std::option::Option::None,
-            payload_params,
-        );
-        Ok(Json(payload.create_json_payload()))
+        // let payload_params = json_payload::json_payload::JsonPayloadParams::new(
+        //     std::option::Option::None,
+        //     std::option::Option::Some(new_todo),
+        //     std::option::Option::None,
+        //     std::option::Option::None,
+        // );
+        // let payload = json_payload::json_payload::JsonPayload::new(
+        //     format!("{}", StatusCode::CREATED),
+        //     std::option::Option::None,
+        //     payload_params,
+        // );
+        // Ok(Json(payload.create_json_payload()))
+
+        headers.insert("Content-Type", "text/html".parse().unwrap());
+        let template = views::views::ToDoListItem { todo: &new_todo };
+        let render = template.render();
+        return match render {
+            Ok(result) => Html(result),
+            Err(_) => renderers::renderers::render_page_not_found(),
+        };
+    }
+
+    pub async fn handle_login(
+        State(state): State<Arc<Mutex<ApplicationState>>>,
+        mut headers: HeaderMap,
+        Form(payload): Form<types::LogInForm>,
+    ) -> types::AxumResponse {
+        headers.insert("Content-Type", "text/html".parse().unwrap());
+        if !db::Db::authenticate(&payload.email, &payload.password) {
+            warn!("handlers::handleLogIn():: email or password is invalid");
+            return renderers::renderers::render_error_message("email or password is invalid. Please try again");
+        }
+        let state_lock = &mut state.lock().unwrap().state;
+        state_lock.change_state(StateNames::DashBoard.as_string().to_string());
+        return renderers::renderers::handle_page_render(&state_lock.get_state(), headers).await;
     }
 
     fn get_state_from_headers(headers: HeaderMap) -> &'static str {
@@ -185,11 +214,11 @@ pub mod handlers {
             .to_str()
             .unwrap();
         match current_state {
-            "logIn" => {
+            "LogIn" => {
                 let log_in = StateNames::Login;
                 return StateNames::as_string(&log_in);
             }
-            "toDo" => {
+            "ToDo" => {
                 let todo = StateNames::ToDos;
                 return StateNames::as_string(&todo);
             }
