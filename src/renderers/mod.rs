@@ -1,49 +1,86 @@
 pub mod renderers {
-    use crate::{state::ApplicationState, views};
+    use crate::state::StateNames;
+    use crate::types;
+    use crate::{state::ApplicationState, utils::AsString, views};
     use askama::Template;
     use axum::response::Html;
     use axum::{extract::State, http::HeaderMap};
     use std::sync::{Arc, Mutex};
+    use tracing::info;
 
-    pub async fn render_index(mut headers: HeaderMap) -> axum::response::Html<std::string::String> {
+    pub async fn handle_page_render(state: &str, mut headers: HeaderMap) -> types::AxumResponse {
         headers.insert("Content-Type", "text/html".parse().unwrap());
-        let template = views::views::IndexTemplate {};
-        let render = template.render();
-        return match render {
-            Ok(result) => Html(result),
-            Err(_) => render_page_not_found(),
-        };
+        info!("renderers::handlePageRender()::state: {}", state);
+        match state.to_string() {
+            state_name => {
+                if state_name == StateNames::Login.as_string() {
+                    let template = views::views::IndexTemplateII { state: state_name };
+                    let render = template.render();
+                    return match render {
+                        Ok(result) => Html(result),
+                        Err(_) => render_page_not_found(),
+                    };
+                } else if state_name == StateNames::DashBoard.as_string() {
+                    return render_dash_baord();
+                } else {
+                    return render_page_not_found();
+                }
+            }
+            _ => render_page_not_found(),
+        }
     }
 
-    pub async fn render_add_todo_form(
-        mut headers: HeaderMap,
-    ) -> axum::response::Html<std::string::String> {
-        headers.insert("Content-Type", "text/html".parse().unwrap());
-        let template = views::views::AddToDosFormTemplate {};
+    fn render_dash_baord() -> types::AxumResponse {
+        let template = views::views::DashBoardTemplate {};
         let render = template.render();
-        return match render {
-            Ok(result) => Html(result),
+        match render {
+            Ok(res) => Html(res),
             Err(_) => render_page_not_found(),
-        };
+        }
     }
 
-    pub async fn render_to_do_list(
-        State(state): State<Arc<Mutex<ApplicationState>>>,
-        mut headers: HeaderMap,
-    ) -> axum::response::Html<std::string::String> {
-        headers.insert("Content-Type", "text/html".parse().unwrap());
-        let state_lock = state.lock().unwrap();
-        let todos = state_lock.todos.get_todos();
-        let template = views::views::TodoListTemplate { todos };
-        let render = template.render();
-        return match render {
-            Ok(result) => Html(result),
-            Err(_) => render_page_not_found(),
+    pub fn render_error_message(message: &str) -> types::AxumResponse {
+        let template = views::views::ErrorTemplate {
+            message: message.to_string(),
         };
+        let render = template.render();
+        match render {
+            Ok(res) => Html(res),
+            Err(_) => render_page_not_found(),
+        }
     }
 
-    fn render_page_not_found() -> axum::response::Html<std::string::String> {
+    pub fn render_page_not_found() -> types::AxumResponse {
         let template = views::views::PageNotFoundTemplate {};
         return Html(template.render().unwrap());
+    }
+
+    pub async fn render_index(
+        State(state): State<Arc<Mutex<ApplicationState>>>,
+        mut headers: HeaderMap,
+    ) -> types::AxumResponse {
+        headers.insert("Content-Type", "text/html".parse().unwrap());
+        let current_state = state.lock().unwrap().state.get_state();
+        return handle_page_render(&current_state, headers).await;
+        // let todos = state_lock.todos.get_todos();
+        // let template = views::views::IndexTemplate { todos };
+        // let render = template.render();
+        // return match render {
+        //     Ok(result) => Html(result),
+        //     Err(_) => render_page_not_found(),
+        // };
+    }
+
+    pub async fn auth(
+        State(state): State<Arc<Mutex<ApplicationState>>>,
+        mut headers: HeaderMap,
+    ) -> types::AxumResponse {
+        headers.insert("Content-Type", "text/html".parse().unwrap());
+        let template = views::views::LogInTemplate {};
+        let render = template.render();
+        return match render {
+            Ok(result) => Html(result),
+            Err(_) => render_page_not_found(),
+        };
     }
 }

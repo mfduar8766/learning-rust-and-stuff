@@ -1,32 +1,76 @@
+{% macro toDoForm() %}
+<form
+  hx-post="http://127.0.0.1:3000/api/add/todos"
+  hx-target="#todo-list"
+  hx-swap="beforeend"
+>
+  <input type="text" name="todo" />
+  <button class="rounded bg-blue-500" type="submit" value="Add Todo">Add Todo</button>
+</form>
+{% endmacro %}
+
+{% macro toDoList(todos) %}
+<ul id="todo-list" class="container flex flex-col justify-around w-1/2">
+  {% for todo in todos %}
+  <div id="todo-list-item" class="container flex flex-row justify-between w-full">
+    <div>
+      <li>{{ todo.name }}</li>
+    </div>
+    <div>
+      <button
+        class="rounded-full"
+        hx-delete="http://127.0.0.1:3000/api/delete/todos/{{todo.id}}"
+        hx-swap="innerHTML"
+        hx-target="#todo-list-item"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+{% endmacro %}
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=To, initial-scale=1.0" />
-    <script src="https://unpkg.com/htmx.org@1.9.11"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/assets/index.css" rel="stylesheet"></link>
     <title>Todos</title>
   </head>
   <body style="height: 100%; width: 100%; margin: 0 auto">
     <div class="container flex flex-col justify-center mx-auto w-full">
       <h1>Todo List</h1>
-      <div
+      <div class="container flex flex-col justify-start">
+        <button
+        hx-get="http://127.0.0.1:3000/views/auth"
+        hx-swap="ouuterHTML"
+        hx-target="body"
+        >Login</button>
+      </div>
+      {% call toDoForm() %}
+      {% call toDoList(todos) %}
+
+
+
+      <!-- <div
         id="add-todo-form"
         hx-targe="this"
         hx-trigger="load"
         hx-get="http://127.0.0.1:3000/views/add-todo-form"
         hx-swap="outerHTML"
-      ></div>
-      <div class="container flex flex-row justify-start w-1/2">
+      ></div> -->
+      <!-- <div class="container flex flex-row justify-start w-1/2">
         <div
           id="to-do-list"
           hx-targe="this"
           hx-trigger="load"
           hx-get="http://127.0.0.1:3000/views/to-do-list"
           hx-swap="outerHTML"
-        ></div>
+        ></div> -->
       </div>
     </div>
   </body>
-  <script src="index.js"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+  <script src="/assets/bundle.js"></script>
 </html>

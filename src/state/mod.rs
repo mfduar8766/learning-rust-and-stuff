@@ -1,22 +1,27 @@
 pub mod state {
     use std::mem::take;
 
-    use crate::todos::{self, TodoList};
+    use crate::{
+        todos::{self, TodoList},
+        utils::AsString,
+    };
     use serde_derive::{Deserialize, Serialize};
 
     #[derive(Debug)]
     pub enum StateNames {
         Login,
+        DashBoard,
         ToDos,
-        PageNotFound
+        PageNotFound,
     }
 
-    impl StateNames {
-        pub fn as_string(&self) -> &'static str {
+    impl AsString for StateNames {
+        fn as_string(&self) -> &'static str {
             match self {
-                &StateNames::Login => "logIn",
+                &StateNames::Login => "LogIn",
                 &StateNames::ToDos => "ToDos",
-                &StateNames::PageNotFound => "PageNotFound"
+                &StateNames::PageNotFound => "PageNotFound",
+                &StateNames::DashBoard => "DashBoard"
             }
         }
     }
@@ -29,7 +34,7 @@ pub mod state {
 
     impl Default for State {
         fn default() -> Self {
-            let initial_state = StateNames::ToDos;
+            let initial_state = StateNames::Login;
             return Self {
                 state: StateNames::as_string(&initial_state).to_string(),
                 previous_state: String::new(),
@@ -42,6 +47,14 @@ pub mod state {
             self.previous_state = take(&mut self.state);
             self.state = new_state;
             return self;
+        }
+        pub fn get_state(&self) -> String {
+            let state = &self.state;
+            return state.to_string();
+        }
+        pub fn get_previous_state(&self) -> String {
+            let prev_state = &self.previous_state;
+            return prev_state.to_string();
         }
     }
 
