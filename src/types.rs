@@ -7,3 +7,8 @@ pub struct LogInForm {
     pub email: String,
     pub password: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AddTodos {
+    pub todo: String,
+}
