@@ -2,8 +2,8 @@ pub mod handlers {
     use crate::{
         db, json_payload, renderers,
         state::{ApplicationState, StateNames},
-        todos, types,
-        utils::AsString,
+        types,
+        utils::{AsString, CustomHeaders},
         views,
     };
     use askama::Template;
@@ -18,20 +18,6 @@ pub mod handlers {
         sync::{Arc, Mutex},
     };
     use tracing::{info, warn};
-
-    enum CustomHeaders {
-        TodoStatus,
-        State,
-    }
-
-    impl CustomHeaders {
-        fn as_string(&self) -> &'static str {
-            match self {
-                &CustomHeaders::TodoStatus => "todo_status",
-                &CustomHeaders::State => "state",
-            }
-        }
-    }
 
     pub async fn health_check() -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)>
     {
@@ -163,9 +149,9 @@ pub mod handlers {
     pub async fn add_todos(
         State(state): State<Arc<Mutex<ApplicationState>>>,
         mut headers: HeaderMap,
-        Form(payload): Form<todos::AddTodos>,
+        Form(payload): Form<types::AddTodos>,
     ) -> types::AxumResponse {
-        info!("Handlers::add_todo()::payload: {:?}", payload);
+        info!("Handlers::addTodo()::payload: {:?}", payload);
         // let mut todo_lock = TODOS.lock().unwrap();
         let mut todo_lock = state.lock().unwrap();
         let new_todo = todo_lock.todos.add_todo(&payload.todo);
@@ -196,14 +182,17 @@ pub mod handlers {
         mut headers: HeaderMap,
         Form(payload): Form<types::LogInForm>,
     ) -> types::AxumResponse {
+        info!("handlers::handleLogIn()::payload: {:?}\n", payload);
         headers.insert("Content-Type", "text/html".parse().unwrap());
         if !db::Db::authenticate(&payload.email, &payload.password) {
             warn!("handlers::handleLogIn():: email or password is invalid");
-            return renderers::renderers::render_error_message("email or password is invalid. Please try again");
+            return renderers::renderers::render_error_message(
+                "email or password is invalid. Please try again.",
+            );
         }
         let state_lock = &mut state.lock().unwrap().state;
         state_lock.change_state(StateNames::DashBoard.as_string().to_string());
-        return renderers::renderers::handle_page_render(&state_lock.get_state(), headers).await;
+        return renderers::renderers::handle_page_render(&state_lock.get_state(), headers);
     }
 
     fn get_state_from_headers(headers: HeaderMap) -> &'static str {

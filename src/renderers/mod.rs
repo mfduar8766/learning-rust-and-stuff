@@ -8,7 +8,7 @@ pub mod renderers {
     use std::sync::{Arc, Mutex};
     use tracing::info;
 
-    pub async fn handle_page_render(state: &str, mut headers: HeaderMap) -> types::AxumResponse {
+    pub fn handle_page_render(state: &str, mut headers: HeaderMap) -> types::AxumResponse {
         headers.insert("Content-Type", "text/html".parse().unwrap());
         info!("renderers::handlePageRender()::state: {}", state);
         match state.to_string() {
@@ -61,7 +61,7 @@ pub mod renderers {
     ) -> types::AxumResponse {
         headers.insert("Content-Type", "text/html".parse().unwrap());
         let current_state = state.lock().unwrap().state.get_state();
-        return handle_page_render(&current_state, headers).await;
+        return handle_page_render(&current_state, headers);
         // let todos = state_lock.todos.get_todos();
         // let template = views::views::IndexTemplate { todos };
         // let render = template.render();
@@ -71,10 +71,7 @@ pub mod renderers {
         // };
     }
 
-    pub async fn auth(
-        State(state): State<Arc<Mutex<ApplicationState>>>,
-        mut headers: HeaderMap,
-    ) -> types::AxumResponse {
+    pub async fn auth(mut headers: HeaderMap) -> types::AxumResponse {
         headers.insert("Content-Type", "text/html".parse().unwrap());
         let template = views::views::LogInTemplate {};
         let render = template.render();

@@ -1,4 +1,5 @@
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct Db {
     email: String,
     password: String,
@@ -20,7 +21,7 @@ impl Db {
         } else if email.contains("test@tester12.com") && password.contains("123") {
             return true;
         } else {
-          return false;
+            return false;
         }
     }
 }
