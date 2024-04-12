@@ -177,6 +177,15 @@ pub mod handlers {
         };
     }
 
+    pub async fn index(
+        State(state): State<Arc<Mutex<ApplicationState>>>,
+        headers: HeaderMap,
+    ) -> types::AxumResponse {
+        let view_params = views::types::ViewsParams { user: None };
+        let state_instance = state.lock().unwrap();
+        return renderers::renderers::reder_index_2(state_instance, headers, view_params);
+    }
+
     pub async fn handle_login(
         State(state): State<Arc<Mutex<ApplicationState>>>,
         mut headers: HeaderMap,
@@ -184,15 +193,28 @@ pub mod handlers {
     ) -> types::AxumResponse {
         info!("handlers::handleLogIn()::payload: {:?}\n", payload);
         headers.insert("Content-Type", "text/html".parse().unwrap());
-        if !db::Db::authenticate(&payload.email, &payload.password) {
+        let state_lock = &mut state.lock().unwrap();
+        if !state_lock
+            .db
+            .authenticate(&payload.email, &payload.password)
+        {
             warn!("handlers::handleLogIn():: email or password is invalid");
             return renderers::renderers::render_error_message(
                 "email or password is invalid. Please try again.",
             );
         }
-        let state_lock = &mut state.lock().unwrap().state;
-        state_lock.change_state(StateNames::DashBoard.as_string().to_string());
-        return renderers::renderers::handle_page_render(&state_lock.get_state(), headers);
+        // let state_lock = &mut state.lock().unwrap().state;
+        state_lock
+            .state
+            .change_state(StateNames::DashBoard.as_string().to_string());
+        let view_params = Some(views::types::ViewsParams {
+            user: Some(take(&mut state_lock.db.user)),
+        });
+        return renderers::renderers::handle_page_render(
+            &state_lock.state.get_state(),
+            headers,
+            view_params,
+        );
     }
 
     fn get_state_from_headers(headers: HeaderMap) -> &'static str {

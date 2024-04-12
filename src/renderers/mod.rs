@@ -1,6 +1,6 @@
 pub mod renderers {
     use crate::state::StateNames;
-    use crate::types;
+    use crate::{db, types};
     use crate::{state::ApplicationState, utils::AsString, views};
     use askama::Template;
     use axum::response::Html;
@@ -8,7 +8,37 @@ pub mod renderers {
     use std::sync::{Arc, Mutex};
     use tracing::info;
 
-    pub fn handle_page_render(state: &str, mut headers: HeaderMap) -> types::AxumResponse {
+    pub fn reder_index_2(
+        state: std::sync::MutexGuard<'_, ApplicationState>,
+        mut headers: HeaderMap,
+        view_params: views::types::ViewsParams,
+    ) -> types::AxumResponse {
+        headers.insert("Content-Type", "text/html".parse().unwrap());
+        let current_state = state.state.get_state();
+        return handle_page_render(&current_state, headers, Some(view_params));
+    }
+
+    pub async fn render_index(
+        State(state): State<Arc<Mutex<ApplicationState>>>,
+        mut headers: HeaderMap,
+    ) -> types::AxumResponse {
+        headers.insert("Content-Type", "text/html".parse().unwrap());
+        let current_state = state.lock().unwrap().state.get_state();
+        return handle_page_render(&current_state, headers, None);
+        // let todos = state_lock.todos.get_todos();
+        // let template = views::views::IndexTemplate { todos };
+        // let render = template.render();
+        // return match render {
+        //     Ok(result) => Html(result),
+        //     Err(_) => render_page_not_found(),
+        // };
+    }
+
+    pub fn handle_page_render(
+        state: &str,
+        mut headers: HeaderMap,
+        view_params: Option<views::types::ViewsParams>,
+    ) -> types::AxumResponse {
         headers.insert("Content-Type", "text/html".parse().unwrap());
         info!("renderers::handlePageRender()::state: {}", state);
         match state.to_string() {
@@ -21,21 +51,20 @@ pub mod renderers {
                         Err(_) => render_page_not_found(),
                     };
                 } else if state_name == StateNames::DashBoard.as_string() {
-                    return render_dash_baord();
+                    return match view_params {
+                        Some(view) => {
+                            return match view.user {
+                                Some(user) => render_dash_baord(user),
+                                _ => render_page_not_found(),
+                            };
+                        }
+                        None => render_page_not_found(),
+                    };
                 } else {
                     return render_page_not_found();
                 }
             }
             _ => render_page_not_found(),
-        }
-    }
-
-    fn render_dash_baord() -> types::AxumResponse {
-        let template = views::views::DashBoardTemplate {};
-        let render = template.render();
-        match render {
-            Ok(res) => Html(res),
-            Err(_) => render_page_not_found(),
         }
     }
 
@@ -55,22 +84,6 @@ pub mod renderers {
         return Html(template.render().unwrap());
     }
 
-    pub async fn render_index(
-        State(state): State<Arc<Mutex<ApplicationState>>>,
-        mut headers: HeaderMap,
-    ) -> types::AxumResponse {
-        headers.insert("Content-Type", "text/html".parse().unwrap());
-        let current_state = state.lock().unwrap().state.get_state();
-        return handle_page_render(&current_state, headers);
-        // let todos = state_lock.todos.get_todos();
-        // let template = views::views::IndexTemplate { todos };
-        // let render = template.render();
-        // return match render {
-        //     Ok(result) => Html(result),
-        //     Err(_) => render_page_not_found(),
-        // };
-    }
-
     pub async fn auth(mut headers: HeaderMap) -> types::AxumResponse {
         headers.insert("Content-Type", "text/html".parse().unwrap());
         let template = views::views::LogInTemplate {};
@@ -79,5 +92,14 @@ pub mod renderers {
             Ok(result) => Html(result),
             Err(_) => render_page_not_found(),
         };
+    }
+
+    fn render_dash_baord(user: db::User) -> types::AxumResponse {
+        let template = views::views::DashBoardTemplate { user };
+        let render = template.render();
+        match render {
+            Ok(res) => Html(res),
+            Err(_) => render_page_not_found(),
+        }
     }
 }

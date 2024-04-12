@@ -1,11 +1,12 @@
 pub mod state {
-    use std::mem::take;
-
     use crate::{
+        db,
         todos::{self, TodoList},
         utils::AsString,
+        views,
     };
     use serde_derive::{Deserialize, Serialize};
+    use std::mem::take;
 
     #[derive(Debug)]
     pub enum StateNames {
@@ -21,7 +22,7 @@ pub mod state {
                 &StateNames::Login => "LogIn",
                 &StateNames::ToDos => "ToDos",
                 &StateNames::PageNotFound => "PageNotFound",
-                &StateNames::DashBoard => "DashBoard"
+                &StateNames::DashBoard => "DashBoard",
             }
         }
     }
@@ -62,6 +63,8 @@ pub mod state {
     pub struct ApplicationState {
         pub state: State,
         pub todos: TodoList,
+        pub db: db::Db,
+        pub views: views::types::ViewsParams,
     }
 
     impl Default for ApplicationState {
@@ -69,6 +72,8 @@ pub mod state {
             return Self {
                 todos: todos::init_todods(),
                 state: State::default(),
+                db: db::Db::new(),
+                views: views::types::ViewsParams::new(),
             };
         }
     }
