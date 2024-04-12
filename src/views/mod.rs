@@ -1,5 +1,7 @@
+pub mod types;
+
 pub mod views {
-    use crate::todos::Todos;
+    use crate::{db, todos::Todos};
     use askama::Template;
 
     #[derive(Template)]
@@ -10,7 +12,9 @@ pub mod views {
 
     #[derive(Template)]
     #[template(path = "dashBoard.html")]
-    pub struct DashBoardTemplate {}
+    pub struct DashBoardTemplate {
+        pub user: db::User,
+    }
 
     #[derive(Template)]
     #[template(path = "index.html")]

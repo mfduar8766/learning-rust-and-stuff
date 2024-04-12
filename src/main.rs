@@ -32,7 +32,7 @@ async fn main() -> Result<(), Error> {
 
     tracing_subscriber::fmt::init();
     let app = Router::new()
-        .route("/", get(renderers::renderers::render_index))
+        .route("/", get(handlers::handlers::index))
         .route("/views/auth", get(renderers::renderers::auth))
         .route(
             &format!("{}/login", conf.api_version_url_prefix),
