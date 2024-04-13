@@ -1,0 +1,37 @@
+{% macro heading(arg) %}
+<h1>{{arg}}</h1>
+{% endmacro %} {% macro header(user) %}
+<div class="main-header">
+  <div class="flex justify-evenly w-1/4">
+    <div>
+      <h2>Welcome {{ user.first_name }} {{ user.last_name }}</h2>
+    </div>
+    <div>
+      <i style="font-size: large;" class="fa fa-user"></i>
+    </div>
+  </div>
+  <div class="flex justify-between w-full">
+    <div class="w-full">
+      <input
+        class="w-full rounded border-gray"
+        placeholder="search for a location..."
+        type="text"
+        name="itemiary-search"
+        id="iteniary"
+      />
+    </div>
+    <div class="spacer"></div>
+    <div style="width: 10%">
+      <input
+        class="w-full rounded bg-white border-black cursor"
+        type="submit"
+        value="Search"
+      />
+    </div>
+    <div class="spacer"></div>
+    <div class="w-1/4">
+      <p>Settings</p>
+    </div>
+  </div>
+</div>
+{% endmacro %}

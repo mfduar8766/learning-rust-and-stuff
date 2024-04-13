@@ -6,10 +6,12 @@ pub struct ViewsParams {
     pub user: Option<db::User>,
 }
 
+pub struct ViewParamsOptions {
+    pub user: Option<db::User>,
+}
+
 impl ViewsParams {
-    pub fn new() -> Self {
-        return Self {
-            user: None,
-        };
+    pub fn new(options: ViewParamsOptions) -> Self {
+        return Self { user: options.user };
     }
 }

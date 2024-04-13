@@ -1,11 +1,9 @@
 {% macro logInForm() %}
-<form
-  class="flex flex-col justify-center"
-  hx-post="http://127.0.0.1:3000/api/v1/login"
-  hx-target="#app"
-  hx-swap="outerHTML"
->
+<form class="flex flex-col justify-center text-center rounded border-1 border-black" hx-post="http://127.0.0.1:3000/api/v1/login" hx-target="#app"
+  hx-swap="outerHTML">
+  <label for="email">Email</label>
   <input class="border-black" type="email" name="email" />
+  <label for="password">Password</label>
   <input class="border-black" type="password" name="password" />
   <input class="rounded bg-blue-500 border-black" type="submit" value="Log In" />
 </form>
@@ -13,14 +11,17 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="/assets/index.css" rel="stylesheet"></link>
+  <link href="/assets/index.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <title>App</title>
 </head>
+
 <body class="container flex flex-col justify-center mx-auto h-screen w-screen">
-  <div class="container mx-auto h-screen w-screen flex justify-center">
+  <div class="container mx-auto h-screen w-screen flex justify-center align-center">
     <div id="app">
       {% call logInForm() %}
     </div>
@@ -28,4 +29,5 @@
 </body>
 <script src="https://unpkg.com/htmx.org@1.9.11"></script>
 <script src="/assets/bundle.js"></script>
+
 </html>

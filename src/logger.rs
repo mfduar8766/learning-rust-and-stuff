@@ -11,7 +11,7 @@ use std::sync::Mutex;
 use std::time::SystemTime;
 
 lazy_static! {
-    static ref FILE: Mutex<File> = Mutex::new(create_dir("").unwrap());
+    static ref TASKS: Mutex<Vec<String>> = Mutex::new(vec![]);
 }
 
 #[derive(Debug, Serialize, Deserialize)]

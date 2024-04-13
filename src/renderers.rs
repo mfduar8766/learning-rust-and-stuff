@@ -1,14 +1,13 @@
-pub mod renderers {
+
     use crate::state::StateNames;
     use crate::{db, types};
     use crate::{state::ApplicationState, utils::AsString, views};
     use askama::Template;
     use axum::response::Html;
-    use axum::{extract::State, http::HeaderMap};
-    use std::sync::{Arc, Mutex};
+    use axum::http::HeaderMap;
     use tracing::info;
 
-    pub fn reder_index_2(
+    pub fn reder_index(
         state: std::sync::MutexGuard<'_, ApplicationState>,
         mut headers: HeaderMap,
         view_params: views::types::ViewsParams,
@@ -16,22 +15,6 @@ pub mod renderers {
         headers.insert("Content-Type", "text/html".parse().unwrap());
         let current_state = state.state.get_state();
         return handle_page_render(&current_state, headers, Some(view_params));
-    }
-
-    pub async fn render_index(
-        State(state): State<Arc<Mutex<ApplicationState>>>,
-        mut headers: HeaderMap,
-    ) -> types::AxumResponse {
-        headers.insert("Content-Type", "text/html".parse().unwrap());
-        let current_state = state.lock().unwrap().state.get_state();
-        return handle_page_render(&current_state, headers, None);
-        // let todos = state_lock.todos.get_todos();
-        // let template = views::views::IndexTemplate { todos };
-        // let render = template.render();
-        // return match render {
-        //     Ok(result) => Html(result),
-        //     Err(_) => render_page_not_found(),
-        // };
     }
 
     pub fn handle_page_render(
@@ -102,4 +85,3 @@ pub mod renderers {
             Err(_) => render_page_not_found(),
         }
     }
-}
