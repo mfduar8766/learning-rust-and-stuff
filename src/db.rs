@@ -3,10 +3,10 @@ use serde_derive::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct User {
     pub email: String,
-    password: String,
     pub first_name: String,
     pub last_name: String,
     pub dob: String,
+    password: String,
 }
 
 impl User {

@@ -20,6 +20,24 @@ mod types;
 mod utils;
 mod views;
 
+// #[macro_use]
+// extern crate lazy_static;
+
+// lazy_static! {
+//     static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
+// }
+
+// #[macro_use]
+// extern crate lazy_static;
+
+// lazy_static! {
+//     pub static ref APP_CONFIG: Mutex<config::Config> = Mutex::new(config::Config::new());
+// }
+
+// pub fn get_app_config<'a>() -> MutexGuard<'a, config::Config> {
+//     return APP_CONFIG.lock().unwrap();
+// }
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // let log = logger::Logger::new("rust-app");
@@ -28,35 +46,35 @@ async fn main() -> Result<(), Error> {
     // log.log_infof(logger::LogMessage::new("", "BAR")).unwrap();
     // log.log_infof(&logger::LogMessage::new("FOO", "")).unwrap();
     // log.log_info("NO OBJECT JUST MESSAGE");
-    let conf = config::Config::default();
+    let conf = config::Config::new();
 
     tracing_subscriber::fmt::init();
     let app = Router::new()
-        .route("/", get(handlers::handlers::index))
-        .route("/views/auth", get(renderers::renderers::auth))
+        .route("/", get(handlers::index))
+        .route("/views/auth", get(renderers::auth))
         .route(
             &format!("{}/login", conf.api_version_url_prefix),
-            post(handlers::handlers::handle_login),
+            post(handlers::handle_login),
         )
         .route(
             &format!("{}/todos", conf.api_version_url_prefix),
-            get(handlers::handlers::get_todos),
+            get(handlers::get_todos),
         )
         .route(
             &format!("{}/healthcheck", conf.api_version_url_prefix),
-            get(handlers::handlers::health_check),
+            get(handlers::health_check),
         )
         .route(
             &format!("{}/add/todos", conf.api_version_url_prefix),
-            post(handlers::handlers::add_todos),
+            post(handlers::add_todos),
         )
         .route(
             &format!("{}/change-state", conf.api_version_url_prefix),
-            post(handlers::handlers::change_state),
+            post(handlers::change_state),
         )
         .route(
             &format!("{}/delete/todos/:id", conf.api_version_url_prefix),
-            delete(handlers::handlers::delete_todo).patch(handlers::handlers::update_todo),
+            delete(handlers::delete_todo).patch(handlers::update_todo),
         )
         .with_state(Arc::new(Mutex::new(state::init_state())))
         .layer(conf.cors)

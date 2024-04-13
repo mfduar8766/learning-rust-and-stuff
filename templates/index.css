@@ -1,3 +1,22 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+
+.main-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  height: 5%;
+  background-color: rgb(100, 95, 236);
+  width: 100%;
+  position:sticky;
+}
+
+.cursor {
+  cursor: pointer;
+}
+
+.spacer {
+  width: 1%;
+}

@@ -1,3 +1,5 @@
-<div>
-  <h2>Welcome {{ user.first_name }} {{ user.last_name }}</h2>
+{%- import "macro.html" as scope -%}
+<div class="flex justify-start flex-col align-center w-full h-full">
+  {% call scope::header(user) %}
+  <div>YOLO</div>
 </div>
