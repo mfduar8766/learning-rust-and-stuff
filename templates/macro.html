@@ -1,26 +1,40 @@
 {% macro heading(arg) %}
 <h1>{{arg}}</h1>
-{% endmacro %} {% macro header(user) %}
-<div class="main-header">
-  <div class="flex justify-evenly w-1/4">
-    <div>
-      <h2>Welcome {{ user.first_name }} {{ user.last_name }}</h2>
-    </div>
-    <div>
-      <i style="font-size: large;" class="fa fa-user"></i>
-    </div>
-  </div>
-  <div class="flex justify-between w-full">
+{% endmacro %} {% macro searchBox() %}
+<div class="w-full h-full">
+  <div class="flex justify-center items-center flex-col w-full h-full dropdown">
     <div class="w-full">
       <input
         class="w-full rounded border-gray"
         placeholder="search for a location..."
         type="text"
         name="itemiary-search"
-        id="iteniary"
+        id="filter-search"
       />
     </div>
-    <div class="spacer"></div>
+    <search-drop-down-component
+      id="search-drop-down"
+    ></search-drop-down-component>
+  </div>
+</div>
+{% endmacro %} {% macro header(user) %}
+<div class="main-header">
+  <div class="flex justify-evenly items-center w-1/4">
+    <div>
+      <h2>Welcome {{ user.first_name }} {{ user.last_name }}</h2>
+    </div>
+    <div class="spacer-1"></div>
+    <div>
+      <i style="font-size: large" class="fa fa-user"></i>
+    </div>
+  </div>
+
+  <div class="spacer-5"></div>
+
+  {% call searchBox() %}
+
+  <div class="flex flex-row justify-start items-center w-full h-full">
+    <div class="spacer-5"></div>
     <div style="width: 10%">
       <input
         class="w-full rounded bg-white border-black cursor"
@@ -28,9 +42,11 @@
         value="Search"
       />
     </div>
-    <div class="spacer"></div>
-    <div class="w-1/4">
-      <p>Settings</p>
+    <div class="spacer-5"></div>
+    <div class="flex justify-end w-full">
+      <div class="w-full">
+        <i style="font-size: large" class="cursor fa fa-gear"></i>
+      </div>
     </div>
   </div>
 </div>
