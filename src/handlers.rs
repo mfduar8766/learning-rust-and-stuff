@@ -92,7 +92,7 @@ pub async fn delete_todo(
         std::option::Option::Some(id),
         std::option::Option::None,
     );
-    let payload = json_payload::JsonPayload::new(
+    let _ = json_payload::JsonPayload::new(
         format!("{}", StatusCode::OK),
         std::option::Option::None,
         payload_params,
@@ -195,7 +195,7 @@ pub async fn handle_login(
         .db
         .authenticate(&payload.email, &payload.password)
     {
-        warn!("handlers::handleLogIn()::email or password is invalid");
+        warn!("handlers::handleLogIn():email or password is invalid");
         return renderers::render_error_message("email or password is invalid. Please try again.");
     }
     // let state_lock = &mut state.lock().unwrap().state;
