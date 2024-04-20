@@ -52,7 +52,7 @@ mod todos {
                 ],
             };
         }
-        pub fn get_todos(&self) -> &Vec<Todos> {
+        pub fn _get_todos(&self) -> &Vec<Todos> {
             return &self.todos;
         }
         pub fn get_todos_as_mut(&mut self) -> &mut Vec<Todos> {
@@ -89,7 +89,7 @@ mod todos {
     }
 }
 
-pub use todos::{AddTodos, TodoList, Todos};
+pub use todos::{TodoList, Todos};
 pub fn init_todods() -> todos::TodoList {
     return todos::TodoList::new();
 }

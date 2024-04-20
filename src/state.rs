@@ -51,7 +51,7 @@ impl State {
         let state = &self.state;
         return state.to_string();
     }
-    pub fn get_previous_state(&self) -> String {
+    pub fn _get_previous_state(&self) -> String {
         let prev_state = &self.previous_state;
         return prev_state.to_string();
     }
@@ -64,16 +64,12 @@ pub struct ApplicationState {
     pub db: db::Db,
 }
 
-impl Default for ApplicationState {
-    fn default() -> Self {
+impl ApplicationState {
+    pub fn new(db: db::Db) -> Self {
         return Self {
             todos: todos::init_todods(),
             state: State::default(),
-            db: db::Db::new(),
+            db, //db::Db::new(),
         };
     }
-}
-
-pub fn init_state() -> ApplicationState {
-    return ApplicationState::default();
 }

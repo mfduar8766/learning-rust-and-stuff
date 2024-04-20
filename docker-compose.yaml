@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  mongodb:
+    container_name: mongodb
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    env_file:
+      - .env
+    volumes:
+      - data-volume:/data/db
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mongosh',
+          '--quiet',
+          'mongodb/travel',
+          '--eval',
+          "'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: ${MAX_DB_CONNECT_RETRIES}
+      start_period: 40s
+    networks:
+      - node-network
+
+  # cache:
+  #   container_name: cache
+  #   image: redis:latest
+  #   restart: always
+  #   ports:
+  #     - 6379:6379
+  #   command: redis-server --save 20 1 --loglevel warning
+  #   volumes:
+  #     - cache:/data
+  #   networks:
+  #     - node-network
+
+  mongo-seed:
+    container_name: mongo-seed
+    image: mongo-seed
+    build:
+      context: ./mongo-seed
+      dockerfile: ./Dockerfile
+    depends_on:
+      - mongodb
+    links:
+      - mongodb
+    networks:
+      - node-network
+
+  # app-users:
+  #   container_name: app-users
+  #   image: app-users:0.0.1
+  #   build:
+  #     context: ./
+  #     target: development
+  #     dockerfile: ./apps/app-users/Dockerfile
+  #   command: npm run start:dev app-users
+  #   env_file:
+  #     - .env.development.local
+  #   volumes:
+  #     - .:/usr/src/app
+  #   restart: always
+  #   working_dir: /usr/src/app
+  #   ports:
+  #     - 3001:3001
+  #   expose:
+  #     - 3001
+  #   healthcheck:
+  #     test: ['CMD', 'node', './healthCheck/index.js', 'app-users']
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 0s
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   networks:
+  #     - node-network
+
+  # app-gateway:
+  #   container_name: app-gateway
+  #   image: app-gateway:0.0.1
+  #   build:
+  #     context: ./
+  #     target: development
+  #     dockerfile: ./app-gateway/Dockerfile
+  #   env_file:
+  #     - .env.development.local
+  #   ports:
+  #     - 3000:3000
+  #   expose:
+  #     - 3000
+  #   volumes:
+  #     - .:/usr/src/app
+  #   restart: always
+  #   working_dir: /usr/src/app
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   # app-users:
+  #   #   condition: service_healthy
+  #   command: air ./cmd/main.go -b 0.0.0.0
+  #   networks:
+  #     - node-network
+
+volumes:
+  cache:
+    driver: local
+  data-volume:
+    driver: local
+
+networks:
+  node-network:
+    driver: bridge

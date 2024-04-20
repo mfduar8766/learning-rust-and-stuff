@@ -1,12 +1,7 @@
-use axum::{
-    http::Error,
-    routing::{delete, get, post},
-    Router,
-};
-use std::sync::{Arc, Mutex};
+use axum::http::Error;
+use dotenv::dotenv;
+use std::{process, sync::Mutex};
 use tokio;
-use tower_http::services::ServeDir;
-use tower_http::trace::TraceLayer;
 use tracing::{error, info};
 mod config;
 mod db;
@@ -19,69 +14,26 @@ mod todos;
 mod types;
 mod utils;
 mod views;
+use once_cell::sync::Lazy;
 
-// #[macro_use]
-// extern crate lazy_static;
-
-// lazy_static! {
-//     static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
-// }
-
-// #[macro_use]
-// extern crate lazy_static;
-
-// lazy_static! {
-//     pub static ref APP_CONFIG: Mutex<config::Config> = Mutex::new(config::Config::new());
-// }
-
-// pub fn get_app_config<'a>() -> MutexGuard<'a, config::Config> {
-//     return APP_CONFIG.lock().unwrap();
-// }
+static CONFIG: Lazy<Mutex<config::Config>> = Lazy::new(|| {
+    return Mutex::new(config::Config::new());
+});
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // let log = logger::Logger::new("rust-app");
-    // log.log_infof(logger::LogMessage::new("FOO", "BAR"))
-    //     .unwrap();
-    // log.log_infof(logger::LogMessage::new("", "BAR")).unwrap();
-    // log.log_infof(&logger::LogMessage::new("FOO", "")).unwrap();
-    // log.log_info("NO OBJECT JUST MESSAGE");
-    let conf = config::Config::new();
-
     tracing_subscriber::fmt::init();
-    let app = Router::new()
-        .route("/", get(handlers::index))
-        .route("/views/auth", get(renderers::auth))
-        .route(
-            &format!("{}/login", conf.api_version_url_prefix),
-            post(handlers::handle_login),
-        )
-        .route(
-            &format!("{}/todos", conf.api_version_url_prefix),
-            get(handlers::get_todos),
-        )
-        .route(
-            &format!("{}/healthcheck", conf.api_version_url_prefix),
-            get(handlers::health_check),
-        )
-        .route(
-            &format!("{}/add/todos", conf.api_version_url_prefix),
-            post(handlers::add_todos),
-        )
-        .route(
-            &format!("{}/change-state", conf.api_version_url_prefix),
-            post(handlers::change_state),
-        )
-        .route(
-            &format!("{}/delete/todos/:id", conf.api_version_url_prefix),
-            delete(handlers::delete_todo).patch(handlers::update_todo),
-        )
-        .with_state(Arc::new(Mutex::new(state::init_state())))
-        .layer(conf.cors)
-        .layer(TraceLayer::new_for_http())
-        .nest_service("/assets", ServeDir::new("../dist"));
-
-    let listener = tokio::net::TcpListener::bind(conf.addr).await.unwrap();
+    dotenv().ok();
+    let conf = CONFIG.lock().unwrap();
+    let db_instane = match db::create_db("db.json").await {
+        Ok(db) => db,
+        Err(e) => {
+            error!("error connection to DB exitig program: {}", e);
+            process::exit(1);
+        }
+    };
+    let app = conf.create_router(db_instane);
+    let listener = tokio::net::TcpListener::bind(&conf.addr).await.unwrap();
     info!("Listening on port {}...\n", listener.local_addr().unwrap());
     let result = axum::serve(listener, app.into_make_service()).await;
     match result {
@@ -90,8 +42,8 @@ async fn main() -> Result<(), Error> {
             return Ok(());
         }
         Err(err) => {
-            error!("{}", err);
-            std::process::exit(-1);
+            error!("error axum::serve():{}", err);
+            std::process::exit(1);
         }
     }
 }

@@ -1,4 +1,3 @@
-
     use crate::state::StateNames;
     use crate::{db, types};
     use crate::{state::ApplicationState, utils::AsString, views};
@@ -47,7 +46,6 @@
                     return render_page_not_found();
                 }
             }
-            _ => render_page_not_found(),
         }
     }
 
