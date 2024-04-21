@@ -5,11 +5,10 @@ use crate::{
     utils::{AsString, CustomHeaders},
     views::{self, types::ViewParamsOptions},
 };
-use askama::Template;
 use axum::{
     extract::{Path, State},
     http::{HeaderMap, StatusCode},
-    response::{Html, IntoResponse},
+    response::IntoResponse,
     Form, Json,
 };
 use std::{
@@ -152,36 +151,37 @@ pub async fn update_todo(
     };
 }
 
-pub async fn add_todos(
-    State(state): State<Arc<Mutex<ApplicationState>>>,
-    mut headers: HeaderMap,
-    Form(payload): Form<types::AddTodos>,
-) -> types::AxumResponse {
-    info!("Handlers::addTodo()::payload: {:?}", payload);
-    // let mut todo_lock = TODOS.lock().unwrap();
-    let mut todo_lock = state.lock().unwrap();
-    let new_todo = todo_lock.todos.add_todo(&payload.todo);
-    // let payload_params = json_payload::json_payload::JsonPayloadParams::new(
-    //     std::option::Option::None,
-    //     std::option::Option::Some(new_todo),
-    //     std::option::Option::None,
-    //     std::option::Option::None,
-    // );
-    // let payload = json_payload::json_payload::JsonPayload::new(
-    //     format!("{}", StatusCode::CREATED),
-    //     std::option::Option::None,
-    //     payload_params,
-    // );
-    // Ok(Json(payload.create_json_payload()))
+// pub async fn add_todos(
+//     State(state): State<Arc<Mutex<ApplicationState>>>,
+//     mut headers: HeaderMap,
+//     Form(payload): Form<types::AddTodos>,
+// ) -> types::AxumResponse {
+//     // info!("Handlers::addTodo()::payload: {:?}", payload);
+//     // // let mut todo_lock = TODOS.lock().unwrap();
+//     // let mut todo_lock = state.lock().unwrap();
+//     // let new_todo = todo_lock.todos.add_todo(&payload.todo);
 
-    headers.insert("Content-Type", "text/html".parse().unwrap());
-    let template = views::views::ToDoListItem { todo: &new_todo };
-    let render = template.render();
-    return match render {
-        Ok(result) => Html(result),
-        Err(_) => renderers::render_page_not_found(),
-    };
-}
+//     // let payload_params = json_payload::json_payload::JsonPayloadParams::new(
+//     //     std::option::Option::None,
+//     //     std::option::Option::Some(new_todo),
+//     //     std::option::Option::None,
+//     //     std::option::Option::None,
+//     // );
+//     // let payload = json_payload::json_payload::JsonPayload::new(
+//     //     format!("{}", StatusCode::CREATED),
+//     //     std::option::Option::None,
+//     //     payload_params,
+//     // );
+//     // Ok(Json(payload.create_json_payload()))
+
+//     // headers.insert("Content-Type", "text/html".parse().unwrap());
+//     // let template = views::views::ToDoListItem { todo: &new_todo };
+//     // let render = template.render();
+//     // return match render {
+//     //     Ok(result) => Html(result),
+//     //     Err(_) => renderers::render_page_not_found(),
+//     // };
+// }
 
 pub async fn handle_login(
     State(state): State<Arc<Mutex<ApplicationState>>>,
