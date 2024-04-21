@@ -1,19 +1,21 @@
-use crate::{db, handlers, renderers, state};
-use axum::{
-    http::{
-        header::{ACCEPT, CONTENT_TYPE},
-        HeaderName, HeaderValue, Method,
-    },
-    routing::{delete, get, post},
-    Router,
+use axum::http::{
+    header::{ACCEPT, CONTENT_TYPE},
+    HeaderName, HeaderValue, Method,
 };
-use mongodb::Database;
-use std::sync::{Arc, Mutex};
-use tower_http::{
-    cors::{AllowHeaders, CorsLayer},
-    services::ServeDir,
-    trace::TraceLayer,
-};
+use std::env;
+use tower_http::cors::{AllowHeaders, CorsLayer};
+
+#[derive(Debug)]
+pub struct Envs {
+    pub api_version: String,
+    pub api_port: String,
+    pub api_host: String,
+    pub db_collection: String,
+    pub db_name: String,
+    pub mongo_url: String,
+    pub max_db_connection_retries: i32,
+    pub use_db: bool,
+}
 
 #[allow(dead_code)]
 pub struct Config {
@@ -26,6 +28,29 @@ pub struct Config {
     api_version: String,
     host: String,
     port: String,
+    envs: Envs,
+}
+
+impl Envs {
+    fn new() -> Self {
+        let max_db_connection_env = env::var("MAX_DB_CONNECT_RETRIES").unwrap_or(5.to_string());
+        let max_db_connection_retries = max_db_connection_env.parse::<i32>().unwrap();
+        let use_db_env = env::var("USE_DB").unwrap_or("false".to_string());
+        let use_db = use_db_env.parse::<bool>().unwrap();
+        return Self {
+            api_version: env::var("API_VERSION").unwrap_or("v1".to_string()),
+            api_port: env::var("API_PORT").unwrap_or("3000".to_string()),
+            api_host: env::var("API_HOST").unwrap_or("localhost".to_string()),
+            db_collection: env::var("DB_COLLECTION").unwrap_or("users".to_string()),
+            db_name: env::var("DB_NAME").unwrap_or("travel".to_string()),
+            mongo_url: env::var("MONGODB_URL").unwrap_or("mongodb://localhost:27017".to_string()),
+            max_db_connection_retries,
+            use_db,
+        };
+    }
+    fn get_envs(&self) -> &Envs {
+        return self;
+    }
 }
 
 impl Config {
@@ -44,46 +69,13 @@ impl Config {
             addr: format!("127.0.0.1:{}", port),
             db_url: String::from("mongodb://localhost:27017"),
             service_name: String::from("rust-app"),
+            envs: Envs::new(),
         };
     }
-    pub fn create_router(&self, db_instance: Database) -> axum::Router {
-        let app = Router::new()
-            .route("/", get(handlers::index))
-            .route("/views/auth", get(renderers::auth))
-            .route(
-                &format!("{}/login", self.api_version_url_prefix),
-                post(handlers::handle_login),
-            )
-            .route(
-                &format!("{}/todos", self.api_version_url_prefix),
-                get(handlers::get_todos),
-            )
-            .route(
-                &format!("{}/healthcheck", self.api_version_url_prefix),
-                get(handlers::health_check),
-            )
-            .route(
-                &format!("{}/add/todos", self.api_version_url_prefix),
-                post(handlers::add_todos),
-            )
-            .route(
-                &format!("{}/change-state", self.api_version_url_prefix),
-                post(handlers::change_state),
-            )
-            .route(
-                &format!("{}/delete/todos/:id", self.api_version_url_prefix),
-                delete(handlers::delete_todo).patch(handlers::update_todo),
-            )
-            .with_state(Arc::new(Mutex::new(state::ApplicationState::new(
-                db::Db::new(db_instance),
-            ))))
-            .layer(self.create_cors())
-            .layer(TraceLayer::new_for_http())
-            .nest_service("/assets", ServeDir::new("../dist"));
-        return app;
+    pub fn get_envs(&self) -> &Envs {
+        return self.envs.get_envs();
     }
-
-    fn create_cors(&self) -> CorsLayer {
+    pub fn create_cors(&self) -> CorsLayer {
         let allowed_headers = AllowHeaders::list([
             HeaderName::from_static("hx-get"),
             HeaderName::from_static("hx-post"),

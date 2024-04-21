@@ -1,12 +1,9 @@
 use anyhow::Error;
 use mongodb::{options::ClientOptions, Client, Database};
 use serde_derive::{Deserialize, Serialize};
-use std::{
-    env,
-    fs::{self},
-    vec,
-};
+use std::fs;
 use tracing::{error, info};
+use crate::CONFIG;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct User {
@@ -43,18 +40,17 @@ impl Iteniary {
 pub struct Db {
     pub user: User,
     pub iteniary: Vec<Iteniary>,
-    pub db: Database
+    pub db: Option<Database>,
 }
 
 impl Db {
-    pub fn new(db: Database) -> Self {
+    pub fn new(db: Option<Database>) -> Self {
         return Self {
             user: User::new(),
             iteniary: vec![Iteniary::new()],
-            db
+            db,
         };
     }
-
     pub fn authenticate(&self, email: &str, password: &str) -> bool {
         if email.len() == 0 || password.len() == 0 {
             return false;
@@ -66,12 +62,13 @@ impl Db {
     }
 }
 
-pub async fn create_db(file: &str) -> Result<mongodb::Database, Error> {
-    let mut client_options = ClientOptions::parse(
-        env::var("MONGODB_URL").unwrap_or(("mongodb://localhost:27017").to_string()),
-    )
-    .await?;
-    client_options.app_name = Some("rust-app".to_string());
+pub async fn create_db(file: &str) -> Result<Option<Database>, Error> {
+    if !CONFIG.lock().unwrap().get_envs().use_db {
+        return Ok(None);
+    }
+    let mut client_options =
+        ClientOptions::parse(CONFIG.lock().unwrap().get_envs().mongo_url.as_str()).await?;
+    client_options.app_name = Some(CONFIG.lock().unwrap().service_name.as_str().to_owned());
     let client = match Client::with_options(client_options) {
         Ok(c) => c,
         Err(e) => {
@@ -79,8 +76,10 @@ pub async fn create_db(file: &str) -> Result<mongodb::Database, Error> {
             return Err(e.into());
         }
     };
-    let db = client.database(&env::var("DB_NAME").unwrap_or("travel".to_string()));
-    let _ = db.create_collection("users", None).await?;
+    let db = client.database(&CONFIG.lock().unwrap().get_envs().db_name);
+    let _ = db
+        .create_collection(&CONFIG.lock().unwrap().get_envs().db_collection, None)
+        .await?;
     if fs::metadata(file).is_ok() {
         let user: User = serde_json::from_str(file).unwrap();
         info!("USER: {:?}", user);
@@ -89,5 +88,5 @@ pub async fn create_db(file: &str) -> Result<mongodb::Database, Error> {
     for collection_name in db.list_collection_names(None).await? {
         println!("{}", collection_name);
     }
-    return Ok(db);
+    return Ok(Some(db));
 }

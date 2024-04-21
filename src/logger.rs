@@ -5,12 +5,12 @@
 // use serde_derive::{Deserialize, Serialize};
 // use std::env;
 // use std::fs::{self, File};
-// use std::io::{BufWriter, Error, ErrorKind, Write};
-// use std::path::Path;
+// use std::io::Error;
+// use std::path::{Path, PathBuf};
 // use std::time::SystemTime;
 
-// const FILE: Lazy<File> = Lazy::new(|| {
-//     let (_, file_format) = get_time();
+// const PATH: Lazy<PathBuf> = Lazy::new(|| {
+//     let (_, file_format) = &get_time();
 //     return create_dir(&create_file_name("rust-app", &file_format)).unwrap();
 // });
 
@@ -45,77 +45,90 @@
 //     }
 // }
 
-// #[derive(Debug, Serialize)]
+// #[derive(Debug, Serialize, Clone, Copy)]
 // pub struct LoggerMessage<'a> {
 //     message: &'a str,
 //     value: &'a str,
-//     time: String,
+//     time: &'a str,
 //     level: &'a str,
 //     service_name: &'a str,
 // }
 
-// impl<'a> LoggerMessage<'a> {
+// #[allow(dead_code)]
+// #[derive(Debug, Clone, Copy)]
+// pub struct Logger<'a> {
+//     service_name: &'a str,
+//     logger_message: LoggerMessage<'a>,
+// }
+
+// impl<'a> Logger<'a> {
 //     pub fn new(service_name: &'a str) -> Self {
+//         // let (_, file_format) = &get_time();
+//         // let path = create_dir(&create_file_name(service_name, &file_format)).unwrap();
 //         return Self {
-//             service_name: &service_name,
+//             service_name,
+//             // file_path: path,
+//             logger_message: LoggerMessage::new(service_name),
+//         };
+//     }
+//     pub fn log_infof(mut self, payload: LogMessage<'a>) -> Result<(), std::io::Error> {
+//         self.logger_message
+//             .set_log_data(LogLevel::INFO.as_string(), payload);
+//         return self.logger_message.write_to_file();
+//     }
+//     pub fn log_info(mut self, payload: LogMessage<'a>) -> Result<(), Error> {
+//         self.logger_message
+//             .set_log_data(LogLevel::INFO.as_string(), payload);
+//         return self.logger_message.write_to_file();
+//     }
+// }
+
+// impl<'a> LoggerMessage<'a> {
+//     fn new(service_name: &'a str) -> Self {
+//         return Self {
+//             service_name,
 //             message: "",
 //             value: "",
-//             time: String::new(),
+//             time: "",
 //             level: "",
 //         };
 //     }
-//     fn write_to_file(&self) -> Result<(), std::io::Error> {
-//         let binding = &mut FILE;
-//         let mut writer = BufWriter::new(binding.by_ref());
-//         match serde_json::to_writer(&mut writer, self) {
-//             Ok(()) => {
-//                 writer
-//                     .flush()
-//                     .expect("Error writing to file and flushing contents");
-//                 return Ok(());
-//             }
-//             Err(e) => Err(Error::new(ErrorKind::Other, e)),
-//         }
-//     }
-//     pub fn log_infof(mut self, payload: LogMessage<'a>) -> Result<(), std::io::Error> {
-//         self.set_log_data(LogLevel::INFO.as_string(), payload);
-//         return self.write_to_file();
-//     }
-
-//     pub fn log_info(mut self, payload: LogMessage<'a>) -> Result<(), Error> {
-//         self.set_log_data(LogLevel::INFO.as_string(), payload);
-//         return self.write_to_file();
-//     }
-
 //     fn set_log_data(&mut self, level: &'a str, payload: LogMessage<'a>) {
-//         let (log_format, _) = get_time();
 //         let message = payload.message;
 //         let value = payload.value;
-//         let format = &log_format;
-//         self.time = format.to_string();
+//         // self.time = self.get_formated_time().to_string().as_str();
 //         self.level = level;
-//         self.message = &message;
-//         self.value = &value;
-//         self.print_message(&log_format, level, &message, &value);
+//         self.message = message;
+//         self.value = value;
+//         self.print_message();
 //     }
-
-//     fn print_message(&mut self, log_format: &str, level: &str, message: &str, value: &str) {
-//         if message.len() > 0 && value.len() > 0 {
-//             println!("{{\"time\": \"{}\",\"level\":\"{}\",\"service\":\"{}\",\"message\":\"{}\",\"value\":\"{}\"}}", log_format, level, self.service_name, message, value);
-//         } else if message.len() == 0 {
+//     fn write_to_file(&self) -> Result<(), std::io::Error> {
+//         let json_str = match serde_json::to_string(self) {
+//             Ok(res) => res,
+//             Err(e) => e.to_string(),
+//         };
+//         return match fs::write(PATH.as_path(), json_str) {
+//             Ok(()) => Ok(()),
+//             Err(e) => Err(e),
+//         };
+//     }
+//     fn print_message(&mut self) {
+//         if self.message.len() > 0 && self.value.len() > 0 {
+//             println!("{{\"time\": \"{}\",\"level\":\"{}\",\"service\":\"{}\",\"message\":\"{}\",\"value\":\"{}\"}}", self.time, self.level, self.service_name, self.message, self.value);
+//         } else if self.message.len() == 0 {
 //             println!(
 //                 "{{\"time\": \"{}\",\"level\":\"{}\",\"service\":\"{}\",\",\"value\":\"{}\"}}",
-//                 log_format, level, self.service_name, value
+//                 self.time, self.level, self.service_name, self.value
 //             );
-//         } else if value.len() == 0 {
+//         } else if self.value.len() == 0 {
 //             println!(
 //                 "{{\"time\": \"{}\",\"level\":\"{}\",\"service\":\"{}\",\"message\":\"{}\"}}",
-//                 log_format, level, self.service_name, message
+//                 self.time, self.level, self.service_name, self.message
 //             );
-//         } else if message.len() == 0 && value.len() == 0 {
+//         } else if self.message.len() == 0 && self.value.len() == 0 {
 //             println!(
 //                 "{{\"time\": \"{}\",\"level\":\"{}\",\"service\":\"{}\"}}",
-//                 log_format, level, self.service_name
+//                 self.time, self.level, self.service_name
 //             );
 //         }
 //     }
@@ -125,7 +138,7 @@
 //     return format!("{}-{}.log", service_name, date);
 // }
 
-// fn create_dir(file_name: &str) -> Result<File, Error> {
+// fn create_dir(file_name: &str) -> Result<PathBuf, Error> {
 //     let current_dir = env::current_dir();
 //     match current_dir {
 //         Ok(path_name) => {
@@ -134,13 +147,15 @@
 //             if Path::exists(&full_path) {
 //                 let file = File::create(full_path);
 //                 match file {
-//                     Ok(f) => Ok(f),
+//                     Ok(f) => Ok(Path::join(Path::new(dir_name), file_name)),
 //                     Err(err) => panic!("{}", err),
 //                 }
 //             } else {
+//                 let dir_name = &Path::join(&path_name, "Logs");
+//                 let full_path = Path::join(Path::new(dir_name), file_name);
 //                 match fs::create_dir_all(dir_name) {
-//                     Ok(()) => match File::create(Path::join(Path::new(dir_name), file_name)) {
-//                         Ok(f) => Ok(f),
+//                     Ok(()) => match File::create(full_path) {
+//                         Ok(f) => Ok(Path::join(Path::new(dir_name), file_name)),
 //                         Err(err) => panic!("{}", err),
 //                     },
 //                     Err(err) => panic!("{}", err),
@@ -158,11 +173,3 @@
 //     let file_name_format = datetime.format("%Y-%m-%d").to_string();
 //     return (log_format, file_name_format);
 // }
-
-// // fn get_log_format<'a>(mut log_format: &'a str) -> &'a str {
-// //     let system_time = SystemTime::now();
-// //     let datetime: DateTime<Utc> = system_time.into();
-// //     let binding = &datetime.format(&log_format).to_string();
-// //     log_format = binding;
-// //     return log_format;
-// // }

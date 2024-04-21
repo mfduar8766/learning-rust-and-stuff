@@ -9,6 +9,7 @@ mod handlers;
 mod json_payload;
 mod logger;
 mod renderers;
+mod router;
 mod state;
 mod todos;
 mod types;
@@ -20,25 +21,30 @@ static CONFIG: Lazy<Mutex<config::Config>> = Lazy::new(|| {
     return Mutex::new(config::Config::new());
 });
 
+// static LOGGER: Lazy<Mutex<logger::Logger>> = Lazy::new(|| {
+//     return Mutex::new(logger::Logger::new("rust-app"));
+// });
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt::init();
     dotenv().ok();
-    let conf = CONFIG.lock().unwrap();
-    let db_instane = match db::create_db("db.json").await {
+    let db_instance = match db::create_db("db.json").await {
         Ok(db) => db,
         Err(e) => {
             error!("error connection to DB exitig program: {}", e);
             process::exit(1);
         }
     };
-    let app = conf.create_router(db_instane);
-    let listener = tokio::net::TcpListener::bind(&conf.addr).await.unwrap();
+    let app = router::create_router(db_instance);
+    let listener = tokio::net::TcpListener::bind(CONFIG.lock().unwrap().addr.as_str())
+        .await
+        .unwrap();
     info!("Listening on port {}...\n", listener.local_addr().unwrap());
     let result = axum::serve(listener, app.into_make_service()).await;
     match result {
         Ok(()) => {
-            info!("Listening on: {}...\n", conf.url);
+            info!("Listening on: {}...\n", CONFIG.lock().unwrap().url);
             return Ok(());
         }
         Err(err) => {
