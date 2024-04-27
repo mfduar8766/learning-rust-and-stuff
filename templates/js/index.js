@@ -1,6 +1,6 @@
 import {
   ELEMENT_TAGS,
-  createSearchDropDownComponent,
+  createComponent,
   toggleDropDown,
   handleRemoveElements,
   ELEMENTS,
@@ -10,10 +10,15 @@ if (
   ELEMENTS.has(ELEMENT_TAGS.DashBoard) &&
   ELEMENTS.has(ELEMENT_TAGS.FilterSearch) &&
   ELEMENTS.get(ELEMENT_TAGS.DashBoard) &&
-  ELEMENTS.has(ELEMENT_TAGS.FilterSearch)
+  ELEMENTS.get(ELEMENT_TAGS.FilterSearch)
 ) {
-  createSearchDropDownComponent();
+  createComponent(ELEMENT_TAGS.SearchDropDownComponent);
+  createComponent(ELEMENT_TAGS.SettingsDropDownComponent);
   ELEMENTS.get(ELEMENT_TAGS.FilterSearch).addEventListener(
+    'click',
+    toggleDropDown
+  );
+  ELEMENTS.get(ELEMENT_TAGS.SettingsGear).addEventListener(
     'click',
     toggleDropDown
   );

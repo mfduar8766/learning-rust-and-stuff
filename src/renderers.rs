@@ -7,7 +7,7 @@ use axum::response::Html;
 use tracing::info;
 
 pub fn reder_index(
-    state: std::sync::MutexGuard<'_, ApplicationState>,
+    state: &mut std::sync::MutexGuard<'_, ApplicationState>,
     mut headers: HeaderMap,
     view_params: views::types::ViewsParams,
 ) -> types::AxumResponse {

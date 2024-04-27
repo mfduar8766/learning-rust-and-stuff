@@ -1,21 +1,4 @@
-{% macro logInForm() %}
-<form
-  class="flex flex-col justify-center text-center rounded border-1 border-black"
-  hx-post="http://127.0.0.1:3000/api/v1/login"
-  hx-target="#app"
-  hx-swap="outerHTML"
->
-  <label for="email">Email</label>
-  <input class="border-black" type="email" name="email" />
-  <label for="password">Password</label>
-  <input class="border-black" type="password" name="password" />
-  <input
-    class="rounded bg-blue-500 border-black"
-    type="submit"
-    value="Log In"
-  />
-</form>
-{% endmacro %}
+{%- import "forms.html" as scope -%}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -30,14 +13,12 @@
     <title>App</title>
   </head>
 
-  <body
-    class="container flex flex-col justify-center mx-auto h-full w-full"
-  >
+  <body class="container flex flex-col justify-center mx-auto h-full w-full">
     <div
       id="base-element"
       class="container mx-auto h-screen w-screen flex justify-center align-center"
     >
-      <div id="app">{% call logInForm() %}</div>
+      <div id="app">{% call scope::logInForm() %}</div>
     </div>
   </body>
   <script src="https://unpkg.com/htmx.org@1.9.11"></script>

@@ -41,10 +41,10 @@ impl Default for State {
     }
 }
 impl State {
-    pub fn change_state(&mut self, state: String) -> &mut Self {
+    pub fn change_state(&mut self, state: &str) -> &mut Self {
         let new_state = state;
         self.previous_state = take(&mut self.state);
-        self.state = new_state;
+        self.state = new_state.to_string();
         return self;
     }
     pub fn get_state(&self) -> String {

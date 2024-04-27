@@ -1,17 +1,29 @@
+use crate::CONFIG;
 use anyhow::Error;
 use mongodb::{options::ClientOptions, Client, Database};
 use serde_derive::{Deserialize, Serialize};
 use std::fs;
 use tracing::{error, info};
-use crate::CONFIG;
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     pub email: String,
     pub first_name: String,
     pub last_name: String,
     pub dob: String,
     password: String,
+}
+
+impl Default for User {
+    fn default() -> Self {
+        return Self {
+            email: String::from("test@tester12.com"),
+            password: String::from("123"),
+            first_name: String::from("John"),
+            last_name: String::from("Doe"),
+            dob: String::from("06/07/1992"),
+        };
+    }
 }
 
 impl User {
@@ -21,7 +33,7 @@ impl User {
             password: String::from("123"),
             first_name: String::from("John"),
             last_name: String::from("Doe"),
-            dob: String::from("1992/06/07"),
+            dob: String::from("06/07/1992"),
         };
     }
 }
@@ -41,6 +53,7 @@ pub struct Db {
     pub user: User,
     pub iteniary: Vec<Iteniary>,
     pub db: Option<Database>,
+    is_authenticated: bool,
 }
 
 impl Db {
@@ -49,16 +62,24 @@ impl Db {
             user: User::new(),
             iteniary: vec![Iteniary::new()],
             db,
+            is_authenticated: false,
         };
     }
-    pub fn authenticate(&self, email: &str, password: &str) -> bool {
+    pub fn authenticate(&mut self, email: &str, password: &str) -> bool {
         if email.len() == 0 || password.len() == 0 {
             return false;
         } else if email.contains("test@tester12.com") && password.contains("123") {
+            self.is_authenticated = true;
             return true;
         } else {
             return false;
         }
+    }
+    pub fn is_authenticated(&self) -> bool {
+        return self.is_authenticated;
+    }
+    pub fn get_user(&mut self) -> &mut User {
+        return &mut self.user;
     }
 }
 
