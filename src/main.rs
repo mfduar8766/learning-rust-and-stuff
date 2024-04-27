@@ -21,10 +21,6 @@ static CONFIG: Lazy<Mutex<config::Config>> = Lazy::new(|| {
     return Mutex::new(config::Config::new());
 });
 
-// static LOGGER: Lazy<Mutex<logger::Logger>> = Lazy::new(|| {
-//     return Mutex::new(logger::Logger::new("rust-app"));
-// });
-
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt::init();

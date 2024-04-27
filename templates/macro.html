@@ -5,7 +5,7 @@
   <div class="flex justify-center items-center flex-col w-full h-full dropdown">
     <div class="w-full">
       <input
-        class="w-full rounded border-gray"
+        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline w-full rounded border-gray"
         placeholder="search for a location..."
         type="text"
         name="itemiary-search"
@@ -18,36 +18,53 @@
   </div>
 </div>
 {% endmacro %} {% macro header(user) %}
-<div class="main-header">
-  <div class="flex justify-evenly items-center w-1/4">
-    <div>
-      <h2>Welcome {{ user.first_name }} {{ user.last_name }}</h2>
-    </div>
-    <div class="spacer-1"></div>
-    <div>
-      <i style="font-size: large" class="fa fa-user"></i>
-    </div>
+<nav class="flex items-baseline justify-between flex-wrap bg-teal-500 p-6">
+  <div class="flex items-center flex-shrink-0 text-white mr-6">
+    <span class="font-semibold text-xl tracking-tight"
+      >Welcome {{ user.first_name }} {{ user.last_name }}
+    </span>
+    <svg
+      class="fill-current h-8 w-8 mr-2"
+      width="54"
+      height="54"
+      viewBox="0 0 54 54"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <i class="text-lg fa fa-user"></i>
+    </svg>
   </div>
 
-  <div class="spacer-5"></div>
-
-  {% call searchBox() %}
-
-  <div class="flex flex-row justify-start items-center w-full h-full">
-    <div class="spacer-5"></div>
-    <div style="width: 10%">
+  <div
+    class="w-full lg:items-baseline block flex-grow lg:flex lg:justify-center lg:w-auto"
+  >
+    <div
+      class="w-full block lg:flex flex-col lg:justify-center lg:items-center lg:flex-grow lg:w-auto mr-2"
+    >
       <input
-        class="w-full rounded bg-white border-black cursor"
-        type="submit"
-        value="Search"
+        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline w-full rounded border-gray"
+        placeholder="search for a location..."
+        type="text"
+        name="itemiary-search"
+        id="filter-search"
       />
+      <search-drop-down-component
+        id="search-drop-down"
+      ></search-drop-down-component>
     </div>
-    <div class="spacer-5"></div>
-    <div class="flex justify-end w-full">
-      <div class="w-full">
-        <i style="font-size: large" class="cursor fa fa-gear"></i>
+    <div class="flex items-center flex-shrink-0 text-white mr-6">
+      <button
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-3"
+        type="submit"
+      >
+        Search
+      </button>
+      <div class="w-full flex flex-col items-center">
+        <i id="settings-gear" class="cursor-pointer text-lg fa fa-gear"></i>
+        <settings-drop-down-component
+          id="settings-drop-down"
+        ></settings-drop-down-component>
       </div>
     </div>
   </div>
-</div>
+</nav>
 {% endmacro %}

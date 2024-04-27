@@ -21,9 +21,36 @@ pub async fn index(
     State(state): State<Arc<Mutex<ApplicationState>>>,
     headers: HeaderMap,
 ) -> types::AxumResponse {
-    let view_params = views::types::ViewsParams::new(ViewParamsOptions { user: None });
-    let state_instance = state.lock().unwrap();
+    let mut view_params = views::types::ViewsParams::new(ViewParamsOptions { user: None });
+    let state_instance = &mut state.lock().unwrap();
+    if state_instance.db.is_authenticated() {
+        view_params.user = Some(take(&mut state_instance.db.get_user()));
+    }
     return renderers::reder_index(state_instance, headers, view_params);
+}
+
+pub async fn handle_login(
+    State(state): State<Arc<Mutex<ApplicationState>>>,
+    mut headers: HeaderMap,
+    Form(payload): Form<types::LogInForm>,
+) -> types::AxumResponse {
+    info!("handlers::handleLogIn()");
+    headers.insert("Content-Type", "text/html".parse().unwrap());
+    let state_lock = &mut state.lock().unwrap();
+    if !state_lock
+        .db
+        .authenticate(&payload.email, &payload.password)
+    {
+        warn!("handlers::handleLogIn():email or password is invalid");
+        return renderers::render_error_message("email or password is invalid. Please try again.");
+    }
+    state_lock
+        .state
+        .change_state(StateNames::DashBoard.as_string());
+    let view_params = Some(views::types::ViewsParams {
+        user: Some(take(&mut state_lock.db.get_user())),
+    });
+    return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
 }
 
 pub async fn health_check() -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
@@ -40,7 +67,7 @@ pub async fn change_state(
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let headers_state = get_state_from_headers(headers);
     let mut state_lock = state.lock().unwrap();
-    let updated_state = state_lock.state.change_state(headers_state.to_string());
+    let updated_state = state_lock.state.change_state(headers_state);
     let payload_params = json_payload::JsonPayloadParams::new(
         std::option::Option::None,
         std::option::Option::None,
@@ -182,31 +209,6 @@ pub async fn update_todo(
 //     //     Err(_) => renderers::render_page_not_found(),
 //     // };
 // }
-
-pub async fn handle_login(
-    State(state): State<Arc<Mutex<ApplicationState>>>,
-    mut headers: HeaderMap,
-    Form(payload): Form<types::LogInForm>,
-) -> types::AxumResponse {
-    info!("handlers::handleLogIn()");
-    headers.insert("Content-Type", "text/html".parse().unwrap());
-    let state_lock = &mut state.lock().unwrap();
-    if !state_lock
-        .db
-        .authenticate(&payload.email, &payload.password)
-    {
-        warn!("handlers::handleLogIn():email or password is invalid");
-        return renderers::render_error_message("email or password is invalid. Please try again.");
-    }
-    // let state_lock = &mut state.lock().unwrap().state;
-    state_lock
-        .state
-        .change_state(StateNames::DashBoard.as_string().to_string());
-    let view_params = Some(views::types::ViewsParams {
-        user: Some(take(&mut state_lock.db.user)),
-    });
-    return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
-}
 
 fn get_state_from_headers(headers: HeaderMap) -> &'static str {
     let state = CustomHeaders::State;
