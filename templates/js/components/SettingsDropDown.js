@@ -27,44 +27,44 @@ export default class SettingsDropDown extends HTMLElement {
 
 .show {
   display: inline-block;
+  width: max-content
+}
+
+.cursor {
+  cursor: pointer;
 }
 `;
 
+  /**
+   * @type {ShadowRoot}
+   */
+  root = undefined;
+
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
+    this.root = this.attachShadow({ mode: 'open' });
     this.render();
+    // @ts-ignore
+    htmx.process(this.root);
   }
 
   toggleDropDown() {
-    this.shadowRoot
+    this.root
       .getElementById('custom-search-drop-down')
       .classList.toggle('show');
   }
 
   template() {
-    return `<div id="custom-search-drop-down" class="dropdown-content">
-    <a href="#about">About</a>
-    <a href="#base">Base</a>
-    <a href="#blog">Blog</a>
+    return `<div id="custom-search-drop-down" class="cursor dropdown-content">
+    <a class="cursor">Profile</a>
+    <a hx-post="http://127.0.0.1:3000/api/v1/logout"
+    hx-target="#dash-board"
+    hx-swap="outerHTML">Log Out</a>
   </div>`;
   }
 
-  handleRemoveElements() {
-    const elements = [
-      this.shadowRoot.getElementById('custom-search-drop-down'),
-    ];
-    const elementLen = elements.length;
-    for (let index = 0; index < elementLen; index++) {
-      const element = elements[index];
-      if (element) {
-        element.remove();
-      }
-    }
-  }
-
   render() {
-    this.shadowRoot.innerHTML = `
+    this.root.innerHTML = `
     <style>${this.css.trim()}</style>
     ${this.template().trim()}
   `;

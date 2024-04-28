@@ -84,6 +84,7 @@ impl Config {
             HeaderName::from_static("hx-target"),
             HeaderName::from_static("hx-current-url"),
             HeaderName::from_static("hx-request"),
+            HeaderName::from_static("hx-redirect"),
             CONTENT_TYPE,
             ACCEPT,
         ]);

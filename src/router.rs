@@ -17,6 +17,10 @@ pub fn create_router(db_instance: Option<Database>) -> Router {
             post(handlers::handle_login),
         )
         .route(
+            &format!("{}/logout", conf.api_version_url_prefix),
+            post(handlers::handle_logout),
+        )
+        .route(
             &format!("{}/todos", conf.api_version_url_prefix),
             get(handlers::get_todos),
         )
