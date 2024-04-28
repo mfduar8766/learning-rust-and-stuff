@@ -8,7 +8,7 @@ use crate::{
 use axum::{
     extract::{Path, State},
     http::{HeaderMap, StatusCode},
-    response::IntoResponse,
+    response::{AppendHeaders, IntoResponse},
     Form, Json,
 };
 use std::{
@@ -36,6 +36,7 @@ pub async fn handle_login(
 ) -> types::AxumResponse {
     info!("handlers::handleLogIn()");
     headers.insert("Content-Type", "text/html".parse().unwrap());
+    headers.insert("HX-Location", "/dash-board".parse().unwrap());
     let state_lock = &mut state.lock().unwrap();
     if !state_lock
         .db
@@ -50,6 +51,27 @@ pub async fn handle_login(
     let view_params = Some(views::types::ViewsParams {
         user: Some(take(&mut state_lock.db.get_user())),
     });
+    return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
+    // (
+    //     StatusCode::OK,
+    //     [
+    //         ("Content-type", "text/html"),
+    //         ("HX-Redirect", "/dash-board"),
+    //     ],
+    //     renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params),
+    // )
+}
+
+pub async fn handle_logout(
+    State(state): State<Arc<Mutex<ApplicationState>>>,
+    mut headers: HeaderMap,
+) -> types::AxumResponse {
+    info!("handlers::handleLogOut()");
+    headers.insert("Content-Type", "text/html".parse().unwrap());
+    let state_lock = &mut state.lock().unwrap();
+    state_lock.db.set_is_authenticated();
+    state_lock.state.change_state(StateNames::Login.as_string());
+    let view_params = Some(views::types::ViewsParams { user: None });
     return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
 }
 

@@ -32,15 +32,20 @@ export const ELEMENT_TAGS = {
 export const ELEMENTS = new Map()
   .set(ELEMENT_TAGS.DashBoard, getElementByID(ELEMENT_TAGS.DashBoard))
   .set(ELEMENT_TAGS.FilterSearch, getElementByID(ELEMENT_TAGS.FilterSearch))
-  .set(
-    ELEMENT_TAGS.SearchDropDownComponent,
-    getElementByID(ELEMENT_TAGS.SearchDropDownComponent)
-  )
+  .set(ELEMENT_TAGS.SettingsGear, getElementByID(ELEMENT_TAGS.SettingsGear));
+
+/**
+ * @type {Map<string, HTMLElement>}
+ */
+export const CUSTOM_ELEMENTS = new Map()
   .set(
     ELEMENT_TAGS.SettingsDropDownComponent,
     getElementByID(ELEMENT_TAGS.SettingsDropDownComponent)
   )
-  .set(ELEMENT_TAGS.SettingsGear, getElementByID(ELEMENT_TAGS.SettingsGear));
+  .set(
+    ELEMENT_TAGS.SearchDropDownComponent,
+    getElementByID(ELEMENT_TAGS.SearchDropDownComponent)
+  );
 
 /**
  *
@@ -55,22 +60,23 @@ export function getElementByID(id) {
  * @param {MouseEvent} e
  */
 export function toggleDropDown(e) {
-  console.log('EVENT', e.target);
-  // @ts-ignore
   if (
-    ELEMENTS.has(ELEMENT_TAGS.SearchDropDownComponent) &&
+    CUSTOM_ELEMENTS.has(ELEMENT_TAGS.SearchDropDownComponent) &&
     // @ts-ignore
     getElementByID(e.target.id).id === ELEMENT_TAGS.FilterSearch
   ) {
     // @ts-ignore
-    ELEMENTS.get(ELEMENT_TAGS.SearchDropDownComponent).toggleDropDown();
+    CUSTOM_ELEMENTS.get(ELEMENT_TAGS.SearchDropDownComponent).toggleDropDown();
   } else if (
-    ELEMENTS.has(ELEMENT_TAGS.SettingsDropDownComponent) &&
+    CUSTOM_ELEMENTS.has(ELEMENT_TAGS.SettingsDropDownComponent) &&
     // @ts-ignore
     getElementByID(e.target.id).id === ELEMENT_TAGS.SettingsGear
   ) {
     // @ts-ignore
-    ELEMENTS.get(ELEMENT_TAGS.SettingsDropDownComponent).toggleDropDown();
+    CUSTOM_ELEMENTS.get(
+      ELEMENT_TAGS.SettingsDropDownComponent
+      // @ts-ignore
+    ).toggleDropDown();
   }
 }
 
@@ -79,21 +85,22 @@ export function toggleDropDown(e) {
  */
 export function createComponent(component) {
   switch (component) {
-    case ELEMENT_TAGS.SearchDropDownComponent:
+    case COMPONENTS.SEARCH_DROP_DOWN:
       // @ts-ignore
-      customElements.define(COMPONENTS.SEARCH_DROP_DOWN, SearchDropDown);
+      customElements.define(component, SearchDropDown);
       break;
-    case ELEMENT_TAGS.SettingsDropDownComponent:
+    case COMPONENTS.SETTINGS_DROP_DOWN:
       // @ts-ignore
-      customElements.define(COMPONENTS.SETTINGS_DROP_DOWN, SettingsDropDown);
+      customElements.define(component, SettingsDropDown);
     default:
       break;
   }
 }
 
 export function handleRemoveElements() {
-  if (ELEMENTS.size > 0) {
-    for (let [key, element] of ELEMENTS.entries()) {
+  console.log('HANDLE-REMOVE');
+  if (CUSTOM_ELEMENTS.size > 0) {
+    for (let [key, element] of CUSTOM_ELEMENTS.entries()) {
       if (key.length && element) {
         element.remove();
         ELEMENTS.delete(key);

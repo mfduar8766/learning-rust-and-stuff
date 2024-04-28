@@ -78,6 +78,9 @@ impl Db {
     pub fn is_authenticated(&self) -> bool {
         return self.is_authenticated;
     }
+    pub fn set_is_authenticated(&mut self) {
+        self.is_authenticated = false;
+    }
     pub fn get_user(&mut self) -> &mut User {
         return &mut self.user;
     }
