@@ -11,7 +11,6 @@ mod logger;
 mod renderers;
 mod router;
 mod state;
-mod todos;
 mod types;
 mod utils;
 mod views;

@@ -17,10 +17,6 @@ pub mod views {
     }
 
     #[derive(Template)]
-    #[template(path = "login.html")]
-    pub struct LogInTemplate {}
-
-    #[derive(Template)]
     #[template(path = "pageNotFound.html")]
     pub struct PageNotFoundTemplate {}
 
