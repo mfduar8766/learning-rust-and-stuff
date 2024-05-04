@@ -1,5 +1,5 @@
 use axum::http::{
-    header::{ACCEPT, CONTENT_TYPE},
+    header::{ACCEPT, ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE},
     HeaderName, HeaderValue, Method,
 };
 use std::env;
@@ -22,6 +22,7 @@ pub struct Config {
     pub addr: String,
     /* /api/v1 */
     pub api_version_url_prefix: String,
+    pub api_url: String,
     pub url: String,
     pub service_name: String,
     pub db_url: String,
@@ -40,7 +41,7 @@ impl Envs {
         return Self {
             api_version: env::var("API_VERSION").unwrap_or("v1".to_string()),
             api_port: env::var("API_PORT").unwrap_or("3000".to_string()),
-            api_host: env::var("API_HOST").unwrap_or("localhost".to_string()),
+            api_host: env::var("API_HOST").unwrap_or("127.0.0.1".to_string()),
             db_collection: env::var("DB_COLLECTION").unwrap_or("users".to_string()),
             db_name: env::var("DB_NAME").unwrap_or("travel".to_string()),
             mongo_url: env::var("MONGODB_URL").unwrap_or("mongodb://localhost:27017".to_string()),
@@ -55,21 +56,26 @@ impl Envs {
 
 impl Config {
     pub fn new() -> Self {
-        let host = &String::from("localhost");
-        let port = &String::from("3000");
-        let api_version = "v1";
-        let api_version_url_prefix = format!("/api/{}", api_version);
-        let url = &format!("http://{}:{}", host, port);
+        let env = Envs::new();
+        let host = &env.api_host;
+        let port = &env.api_port;
+        let api_version = &env.api_version;
+        let api_version_url_prefix = &format!("/api/{}", api_version);
+        let addr = &format!("{}:{}", host, port);
+        let api_url = &format!("http://{}{}/", addr, api_version_url_prefix);
+        let url = &format!("http://{}", addr);
+        let db_url = &env.mongo_url;
         return Self {
             host: host.to_string(),
             port: port.to_string(),
             api_version: api_version.to_string(),
-            api_version_url_prefix,
-            url: url.to_string(),
-            addr: format!("127.0.0.1:{}", port),
-            db_url: String::from("mongodb://localhost:27017"),
+            api_version_url_prefix: api_version_url_prefix.to_string(),
+            api_url: api_url.to_string(),
+            addr: addr.to_string(),
+            db_url: db_url.to_string(),
             service_name: String::from("rust-app"),
-            envs: Envs::new(),
+            url: url.to_string(),
+            envs: env,
         };
     }
     pub fn get_envs(&self) -> &Envs {
@@ -85,11 +91,14 @@ impl Config {
             HeaderName::from_static("hx-current-url"),
             HeaderName::from_static("hx-request"),
             HeaderName::from_static("hx-redirect"),
+            HeaderName::from_static("hx-location"),
+            HeaderName::from_static("hx-trigger"),
+            ACCESS_CONTROL_ALLOW_ORIGIN,
             CONTENT_TYPE,
             ACCEPT,
         ]);
         let cors = CorsLayer::new()
-            .allow_origin(self.url.parse::<HeaderValue>().unwrap())
+            .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
             .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
             .allow_credentials(false)
             .allow_headers(allowed_headers);

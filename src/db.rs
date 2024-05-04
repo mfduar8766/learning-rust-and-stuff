@@ -5,6 +5,7 @@ use serde_derive::{Deserialize, Serialize};
 use std::fs;
 use tracing::{error, info};
 
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     pub email: String,
@@ -39,11 +40,34 @@ impl User {
 }
 
 #[derive(Debug)]
-pub struct Iteniary {}
+pub struct Activity {
+    pub time: String,
+    pub name: String,
+}
 
-impl Iteniary {
-    fn new() -> Self {
-        return Self {};
+#[derive(Debug)]
+pub struct Days {
+    pub activity: Activity,
+}
+
+#[derive(Debug)]
+pub struct Itinerary {
+    pub destination: String,
+    pub image: String,
+    pub departure: String,
+    pub arrival: String,
+    pub over_all_budget: String,
+}
+
+impl Itinerary {
+    pub fn new() -> Self {
+        return Self {
+            destination: String::from("Germany"),
+            image: String::from("Germany.png"),
+            departure: String::from("May 23, 20204 8:00AM"),
+            arrival: String::from("May 23, 2024 4:00PM"),
+            over_all_budget: String::from("$100,000.00"),
+        };
     }
 }
 
@@ -51,7 +75,7 @@ impl Iteniary {
 #[allow(dead_code)]
 pub struct Db {
     pub user: User,
-    pub iteniary: Vec<Iteniary>,
+    pub iteniary: Vec<Itinerary>,
     pub db: Option<Database>,
     is_authenticated: bool,
 }
@@ -60,7 +84,7 @@ impl Db {
     pub fn new(db: Option<Database>) -> Self {
         return Self {
             user: User::new(),
-            iteniary: vec![Iteniary::new()],
+            iteniary: vec![Itinerary::new()],
             db,
             is_authenticated: false,
         };

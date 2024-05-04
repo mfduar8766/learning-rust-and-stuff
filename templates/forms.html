@@ -1,8 +1,9 @@
-{% macro logInForm() %}
+{% macro logInForm(api_url) %}
 <div class="w-full max-w-xs">
   <form
-    hx-post="http://127.0.0.1:3000/api/v1/login"
+    hx-post="{{api_url}}login"
     hx-target="#app"
+    id="log-in-form"
     hx-swap="outerHTML"
     class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
   >

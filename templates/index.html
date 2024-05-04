@@ -12,13 +12,12 @@
     />
     <title>App</title>
   </head>
-
   <body class="container flex flex-col justify-center mx-auto h-full w-full">
     <div
       id="base-element"
       class="container mx-auto h-screen w-screen flex justify-center align-center"
     >
-      <div id="app">{% call scope::logInForm() %}</div>
+      <div id="app">{% call scope::logInForm(api_url) %}</div>
     </div>
   </body>
   <script src="https://unpkg.com/htmx.org@1.9.11"></script>

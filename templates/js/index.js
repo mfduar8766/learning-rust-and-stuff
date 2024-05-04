@@ -2,7 +2,6 @@ import {
   ELEMENT_TAGS,
   createComponent,
   toggleDropDown,
-  handleRemoveElements,
   ELEMENTS,
   COMPONENTS,
 } from './utils';
@@ -14,6 +13,10 @@ import {
 //     window.location.href = '/dash-board';
 //   }
 // });
+
+// if (document.getElementById('log-in-form')) {
+//   handleRemoveElements();
+// }
 
 if (
   ELEMENTS.get(ELEMENT_TAGS.DashBoard) &&
@@ -30,6 +33,4 @@ if (
     'click',
     toggleDropDown
   );
-} else {
-  handleRemoveElements();
 }

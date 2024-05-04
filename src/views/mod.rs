@@ -6,14 +6,17 @@ pub mod views {
 
     #[derive(Template)]
     #[template(path = "index.html")]
-    pub struct IndexTemplate {
-        pub state: String,
+    pub struct IndexTemplate<'a> {
+        pub state: &'a str,
+        pub api_url: &'a str
     }
 
     #[derive(Template)]
     #[template(path = "dashBoard.html")]
-    pub struct DashBoardTemplate {
+    pub struct DashBoardTemplate<'a> {
         pub user: db::User,
+        pub iteniary: Vec<db::Itinerary>,
+        pub api_url: &'a str
     }
 
     #[derive(Template)]
