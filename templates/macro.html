@@ -1,6 +1,26 @@
+{% macro baseHeader() %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="/assets/index.css" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+  />
+  <title>App</title>
+</head>
+{% endmacro %}
+
+{% macro baseFooter %}
+<script src="https://unpkg.com/htmx.org@1.9.11"></script>
+<script src="/assets/bundle.js"></script>
+{% endmacro %}
+
 {% macro heading(arg) %}
 <h1>{{arg}}</h1>
-{% endmacro %} {% macro searchBox() %}
+{% endmacro %}
+
+{% macro searchBox() %}
 <div class="w-full h-full">
   <div class="flex justify-center items-center flex-col w-full h-full dropdown">
     <div class="w-full">
@@ -17,23 +37,16 @@
     ></search-drop-down-component>
   </div>
 </div>
-{% endmacro %} {% macro header(user) %}
+{% endmacro %}
+
+{% macro header(user, api_url) %}
 <nav class="flex items-baseline justify-between flex-wrap bg-teal-500 p-6">
   <div class="flex items-center flex-shrink-0 text-white mr-6">
-    <span class="font-semibold text-xl tracking-tight"
+    <span class="font-semibold text-xl tracking-tight mr-2"
       >Welcome {{ user.first_name }} {{ user.last_name }}
     </span>
-    <svg
-      class="fill-current h-8 w-8 mr-2"
-      width="54"
-      height="54"
-      viewBox="0 0 54 54"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <i class="text-lg fa fa-user"></i>
-    </svg>
+    <i style="font-size: xx-large" class="text-lg fa fa-user"></i>
   </div>
-
   <div
     class="w-full lg:items-baseline block flex-grow lg:flex lg:justify-center lg:w-auto"
   >
@@ -66,6 +79,7 @@
         ></i>
         <settings-drop-down-component
           id="settings-drop-down"
+          data="{{api_url}}"
         ></settings-drop-down-component>
       </div>
     </div>

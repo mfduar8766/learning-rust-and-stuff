@@ -87,24 +87,45 @@ export function createComponent(component) {
   switch (component) {
     case COMPONENTS.SEARCH_DROP_DOWN:
       // @ts-ignore
-      customElements.define(component, SearchDropDown);
+      // customElements.define(component, SearchDropDown);
+      checkForCustomElement(component, SearchDropDown);
       break;
     case COMPONENTS.SETTINGS_DROP_DOWN:
       // @ts-ignore
-      customElements.define(component, SettingsDropDown);
+      // customElements.define(component, SettingsDropDown);
+      checkForCustomElement(component, SettingsDropDown);
     default:
       break;
   }
 }
 
-export function handleRemoveElements() {
-  console.log('HANDLE-REMOVE');
-  if (CUSTOM_ELEMENTS.size > 0) {
-    for (let [key, element] of CUSTOM_ELEMENTS.entries()) {
-      if (key.length && element) {
-        element.remove();
-        ELEMENTS.delete(key);
-      }
-    }
+/**
+ * @param {string} component
+ * @param {CustomElementConstructor} constructor
+ */
+function checkForCustomElement(component, constructor) {
+  if (!customElements.get(component)) {
+    customElements.define(component, constructor);
+  }
+}
+
+/**
+ * @param {MouseEvent} event
+ */
+function closePopUps(event) {
+  console.log('EVENT', event.target);
+  if (
+    CUSTOM_ELEMENTS.has(ELEMENT_TAGS.SettingsDropDownComponent) &&
+    document.querySelector(COMPONENTS.SETTINGS_DROP_DOWN) &&
+    // @ts-ignore
+    document
+      .getElementById(ELEMENT_TAGS.SettingsDropDownComponent)
+      // @ts-ignore
+      .hasShowClassAttribute()
+  ) {
+    CUSTOM_ELEMENTS.get(
+      ELEMENT_TAGS.SettingsDropDownComponent
+      // @ts-ignore
+    ).toggleDropDown();
   }
 }

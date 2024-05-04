@@ -27,6 +27,10 @@ pub fn create_router(db_instance: Option<Database>) -> Router {
             &format!("{}/change-state", conf.api_version_url_prefix),
             post(handlers::change_state),
         )
+        .route(
+            &format!("{}/image/:resource_id", conf.api_version_url_prefix),
+            get(handlers::get_image),
+        )
         .with_state(Arc::new(Mutex::new(state::ApplicationState::new(
             db::Db::new(db_instance),
         ))))

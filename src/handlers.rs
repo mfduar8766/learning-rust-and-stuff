@@ -6,16 +6,26 @@ use crate::{
     views::{self, types::ViewParamsOptions},
 };
 use axum::{
-    extract::State,
-    http::{HeaderMap, StatusCode},
-    response::IntoResponse,
+    extract::{Path, Query, State},
+    http::{
+        header::{CONTENT_DISPOSITION, CONTENT_TYPE},
+        HeaderMap, StatusCode,
+    },
+    response::{AppendHeaders, IntoResponse},
     Form, Json,
 };
+use serde::Deserialize;
 use std::{
     mem::take,
     sync::{Arc, Mutex},
 };
+use tokio_util;
 use tracing::{info, warn};
+
+#[derive(Deserialize)]
+pub struct QueryParams {
+    image_name: String,
+}
 
 pub async fn index(
     State(state): State<Arc<Mutex<ApplicationState>>>,
@@ -117,4 +127,29 @@ fn get_state_from_headers(headers: HeaderMap) -> &'static str {
             return StateNames::as_string(&page_not_found);
         }
     };
+}
+
+pub async fn get_image(Path(resource_id): Path<String>) -> impl IntoResponse {
+    let path = &format!("../assets/{}", resource_id);
+    info!("handlers::getImage()::resource_id:{}", resource_id);
+    let file = match tokio::fs::File::open(path).await {
+        Ok(file) => file,
+        Err(err) => return Err((StatusCode::NOT_FOUND, format!("image not found: {}", err))),
+    };
+    let content_type = match mime_guess::from_path(&path).first_raw() {
+        Some(mime) => mime,
+        None => {
+            return Err((
+                StatusCode::BAD_REQUEST,
+                "MIME Type couldn't be determined".to_string(),
+            ))
+        }
+    };
+    let stream = tokio_util::io::ReaderStream::new(file);
+    let body = axum::body::Body::from_stream(stream);
+    let headers = AppendHeaders([
+        (CONTENT_TYPE, content_type),
+        (CONTENT_DISPOSITION, "imag from user iteniary"),
+    ]);
+    Ok((headers, body))
 }

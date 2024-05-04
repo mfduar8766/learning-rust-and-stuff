@@ -1,5 +1,5 @@
 use crate::state::StateNames;
-use crate::{db, types};
+use crate::{db, types, CONFIG};
 use crate::{state::ApplicationState, utils::AsString, views};
 use askama::Template;
 use axum::http::HeaderMap;
@@ -23,10 +23,13 @@ pub fn handle_page_render(
 ) -> types::AxumResponse {
     headers.insert("Content-Type", "text/html".parse().unwrap());
     info!("renderers::handlePageRender()::state: {}", state);
-    match state.to_string() {
+    match state {
         state_name => {
             if state_name == StateNames::Login.as_string() {
-                let template = views::views::IndexTemplate { state: state_name };
+                let template = views::views::IndexTemplate {
+                    state: state_name,
+                    api_url: &CONFIG.lock().unwrap().api_url,
+                };
                 let render = template.render();
                 return match render {
                     Ok(result) => Html(result),
@@ -66,7 +69,11 @@ pub fn render_page_not_found() -> types::AxumResponse {
 }
 
 fn render_dash_baord(user: db::User) -> types::AxumResponse {
-    let template = views::views::DashBoardTemplate { user };
+    let template = views::views::DashBoardTemplate {
+        user,
+        iteniary: vec![db::Itinerary::new(), db::Itinerary::new()],
+        api_url: &CONFIG.lock().unwrap().api_url,
+    };
     let render = template.render();
     match render {
         Ok(res) => Html(res),

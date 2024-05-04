@@ -40,12 +40,23 @@ export default class SettingsDropDown extends HTMLElement {
    */
   root = undefined;
 
+  /**
+   * @typedef {Object} ComponentData
+   * @property {string} api_url - api_url: the url for the apis
+   */
+  /** @type {ComponentData} */
+  data = {
+    api_url: '',
+  };
+
   constructor() {
     super();
     this.root = this.attachShadow({ mode: 'open' });
+    this.data = { ...this.data, api_url: this.getAttribute('data') || '' };
     this.render();
+
     // @ts-ignore
-    htmx.process(this.root);
+    htmx.process(this.root.getElementById('custom-search-drop-down'));
   }
 
   toggleDropDown() {
@@ -54,10 +65,17 @@ export default class SettingsDropDown extends HTMLElement {
       .classList.toggle('show');
   }
 
+  /**
+   * @returns boolean
+   */
+  hasShowClassAttribute() {
+    return this.root.getElementById('custom-search-drop-down').classList.contains('show');
+  }
+
   template() {
     return `<div id="custom-search-drop-down" class="cursor dropdown-content">
     <a class="cursor">Profile</a>
-    <a hx-post="http://127.0.0.1:3000/api/v1/logout"
+    <a hx-post="${this.data.api_url}logout"
     hx-target="#dash-board"
     hx-swap="outerHTML">Log Out</a>
   </div>`;
