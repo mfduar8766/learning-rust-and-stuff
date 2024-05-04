@@ -33,14 +33,12 @@ where
 }
 
 pub enum CustomHeaders {
-    TodoStatus,
     State,
 }
 
 impl AsString for CustomHeaders {
     fn as_string(&self) -> &'static str {
         match self {
-            &CustomHeaders::TodoStatus => "todo_status",
             &CustomHeaders::State => "state",
         }
     }

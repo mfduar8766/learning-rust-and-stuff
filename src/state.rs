@@ -1,8 +1,4 @@
-use crate::{
-    db,
-    todos::{self, TodoList},
-    utils::AsString,
-};
+use crate::{db, utils::AsString};
 use serde_derive::{Deserialize, Serialize};
 use std::mem::take;
 
@@ -10,7 +6,6 @@ use std::mem::take;
 pub enum StateNames {
     Login,
     DashBoard,
-    ToDos,
     PageNotFound,
 }
 
@@ -18,7 +13,6 @@ impl AsString for StateNames {
     fn as_string(&self) -> &'static str {
         match self {
             &StateNames::Login => "LogIn",
-            &StateNames::ToDos => "ToDos",
             &StateNames::PageNotFound => "PageNotFound",
             &StateNames::DashBoard => "DashBoard",
         }
@@ -60,14 +54,12 @@ impl State {
 #[derive(Debug)]
 pub struct ApplicationState {
     pub state: State,
-    pub todos: TodoList,
     pub db: db::Db,
 }
 
 impl ApplicationState {
     pub fn new(db: db::Db) -> Self {
         return Self {
-            todos: todos::init_todods(),
             state: State::default(),
             db,
         };

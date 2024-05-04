@@ -65,16 +65,6 @@ pub fn render_page_not_found() -> types::AxumResponse {
     return Html(template.render().unwrap());
 }
 
-pub async fn auth(mut headers: HeaderMap) -> types::AxumResponse {
-    headers.insert("Content-Type", "text/html".parse().unwrap());
-    let template = views::views::LogInTemplate {};
-    let render = template.render();
-    return match render {
-        Ok(result) => Html(result),
-        Err(_) => render_page_not_found(),
-    };
-}
-
 fn render_dash_baord(user: db::User) -> types::AxumResponse {
     let template = views::views::DashBoardTemplate { user };
     let render = template.render();
