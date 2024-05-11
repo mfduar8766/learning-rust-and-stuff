@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "checkJs": true,
-    "target": "ES2016"
+    "target": "ES2016",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
   }
 }

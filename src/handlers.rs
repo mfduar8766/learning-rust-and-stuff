@@ -6,7 +6,7 @@ use crate::{
     views::{self, types::ViewParamsOptions},
 };
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, State},
     http::{
         header::{CONTENT_DISPOSITION, CONTENT_TYPE},
         HeaderMap, StatusCode,
@@ -14,7 +14,6 @@ use axum::{
     response::{AppendHeaders, IntoResponse},
     Form, Json,
 };
-use serde::Deserialize;
 use std::{
     mem::take,
     sync::{Arc, Mutex},
@@ -22,19 +21,18 @@ use std::{
 use tokio_util;
 use tracing::{info, warn};
 
-#[derive(Deserialize)]
-pub struct QueryParams {
-    image_name: String,
-}
-
 pub async fn index(
     State(state): State<Arc<Mutex<ApplicationState>>>,
     headers: HeaderMap,
 ) -> types::AxumResponse {
-    let mut view_params = views::types::ViewsParams::new(ViewParamsOptions { user: None });
+    let mut view_params = views::types::ViewsParams::new(ViewParamsOptions {
+        user: None,
+        itineary: None,
+    });
     let state_instance = &mut state.lock().unwrap();
     if state_instance.db.is_authenticated() {
         view_params.user = Some(take(&mut state_instance.db.get_user()));
+        view_params.itineary = Some(take(&mut state_instance.db.get_itimeary()));
     }
     return renderers::reder_index(state_instance, headers, view_params);
 }
@@ -60,6 +58,7 @@ pub async fn handle_login(
         .change_state(StateNames::DashBoard.as_string());
     let view_params = Some(views::types::ViewsParams {
         user: Some(take(&mut state_lock.db.get_user())),
+        itineary: Some(take(&mut state_lock.db.get_itimeary())),
     });
     return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
     // (
@@ -81,7 +80,10 @@ pub async fn handle_logout(
     let state_lock = &mut state.lock().unwrap();
     state_lock.db.set_is_authenticated();
     state_lock.state.change_state(StateNames::Login.as_string());
-    let view_params = Some(views::types::ViewsParams { user: None });
+    let view_params = Some(views::types::ViewsParams {
+        user: None,
+        itineary: None,
+    });
     return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
 }
 

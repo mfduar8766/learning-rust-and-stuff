@@ -5,18 +5,6 @@ use axum::http::{
 use std::env;
 use tower_http::cors::{AllowHeaders, CorsLayer};
 
-#[derive(Debug)]
-pub struct Envs {
-    pub api_version: String,
-    pub api_port: String,
-    pub api_host: String,
-    pub db_collection: String,
-    pub db_name: String,
-    pub mongo_url: String,
-    pub max_db_connection_retries: i32,
-    pub use_db: bool,
-}
-
 #[allow(dead_code)]
 pub struct Config {
     pub addr: String,
@@ -25,11 +13,23 @@ pub struct Config {
     pub api_url: String,
     pub url: String,
     pub service_name: String,
-    pub db_url: String,
     api_version: String,
     host: String,
     port: String,
     envs: Envs,
+}
+
+#[derive(Debug)]
+pub struct Envs {
+    pub api_version: String,
+    pub api_port: String,
+    pub api_host: String,
+    pub db_users_collection: String,
+    pub db_itineary_collection: String,
+    pub db_name: String,
+    pub mongo_url: String,
+    pub max_db_connection_retries: i32,
+    pub use_db: bool,
 }
 
 impl Envs {
@@ -42,16 +42,16 @@ impl Envs {
             api_version: env::var("API_VERSION").unwrap_or("v1".to_string()),
             api_port: env::var("API_PORT").unwrap_or("3000".to_string()),
             api_host: env::var("API_HOST").unwrap_or("127.0.0.1".to_string()),
-            db_collection: env::var("DB_COLLECTION").unwrap_or("users".to_string()),
+            db_users_collection: env::var("DB_USERS_COLLECTION").unwrap_or("users".to_string()),
+            db_itineary_collection: env::var("DB_ININEARY_COLLECTION")
+                .unwrap_or("itineary".to_string()),
             db_name: env::var("DB_NAME").unwrap_or("travel".to_string()),
             mongo_url: env::var("MONGODB_URL").unwrap_or("mongodb://localhost:27017".to_string()),
             max_db_connection_retries,
             use_db,
         };
     }
-    fn get_envs(&self) -> &Envs {
-        return self;
-    }
+
 }
 
 impl Config {
@@ -64,7 +64,6 @@ impl Config {
         let addr = &format!("{}:{}", host, port);
         let api_url = &format!("http://{}{}/", addr, api_version_url_prefix);
         let url = &format!("http://{}", addr);
-        let db_url = &env.mongo_url;
         return Self {
             host: host.to_string(),
             port: port.to_string(),
@@ -72,7 +71,6 @@ impl Config {
             api_version_url_prefix: api_version_url_prefix.to_string(),
             api_url: api_url.to_string(),
             addr: addr.to_string(),
-            db_url: db_url.to_string(),
             service_name: String::from("rust-app"),
             url: url.to_string(),
             envs: env,

@@ -39,7 +39,10 @@ pub fn handle_page_render(
                 return match view_params {
                     Some(view) => {
                         return match view.user {
-                            Some(user) => render_dash_baord(user),
+                            Some(user) => match view.itineary {
+                                Some(it) => render_dash_baord(user, it),
+                                _ => render_page_not_found(),
+                            },
                             _ => render_page_not_found(),
                         };
                     }
@@ -68,10 +71,10 @@ pub fn render_page_not_found() -> types::AxumResponse {
     return Html(template.render().unwrap());
 }
 
-fn render_dash_baord(user: db::User) -> types::AxumResponse {
+fn render_dash_baord(user: db::User, itineary: Vec<db::Itinerary>) -> types::AxumResponse {
     let template = views::views::DashBoardTemplate {
         user,
-        iteniary: vec![db::Itinerary::new(), db::Itinerary::new()],
+        itineary,
         api_url: &CONFIG.lock().unwrap().api_url,
     };
     let render = template.render();

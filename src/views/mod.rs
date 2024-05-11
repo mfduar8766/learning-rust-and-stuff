@@ -15,7 +15,7 @@ pub mod views {
     #[template(path = "dashBoard.html")]
     pub struct DashBoardTemplate<'a> {
         pub user: db::User,
-        pub iteniary: Vec<db::Itinerary>,
+        pub itineary: Vec<db::Itinerary>,
         pub api_url: &'a str
     }
 

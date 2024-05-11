@@ -28,6 +28,6 @@ if [ $yn = y ]; then
 else
   echo "Running docker-compose.yaml file and starting services..." &
   COMPOSE_HTTP_TIMEOUT=500 docker-compose up &
-  docker stop mongo-seed &
-  docker-compose rm -f mongo-seed &
+  # docker stop mongo-seed &
+  # docker-compose rm -f mongo-seed &
 fi

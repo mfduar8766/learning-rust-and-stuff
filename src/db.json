@@ -1,9 +1,28 @@
 {
+  "_id": "12345",
   "user_name": "mdf123",
   "first_name": "Matt",
   "last_name": "Duarte",
   "email": "email@gmail.com",
   "password": "123",
   "dob": "06/07/92",
-  "phone_number": "555-555-5555"
+  "phone_number": "555-555-5555",
+  "iteniary": [
+    {
+      "destination": "Germany",
+      "departure": "May 23, 20204 8:00AM",
+      "arrival": "May 23, 20204 4:00PM",
+      "resource_id": "Germany.png",
+      "over_all_budget": "$100,000.00",
+      "user_id": "12345"
+    },
+    {
+      "destination": "Germany",
+      "departure": "May 23, 20204 8:00AM",
+      "arrival": "May 23, 20204 4:00PM",
+      "resource_id": "Germany.png",
+      "over_all_budget": "$100,000.00",
+      "user_id":"12345"
+    }
+  ]
 }

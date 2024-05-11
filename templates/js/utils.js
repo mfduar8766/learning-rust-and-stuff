@@ -1,3 +1,4 @@
+import AddItinearyModal from './components/AddItinearyModal';
 import SearchDropDown from './components/SearchDropDown';
 import SettingsDropDown from './components/SettingsDropDown';
 
@@ -8,11 +9,13 @@ import SettingsDropDown from './components/SettingsDropDown';
  * @typedef {Object} Components
  * @property {string} SEARCH_DROP_DOWN -  search-drop-down-component custom search drop down component
  * @property {string} SETTINGS_DROP_DOWN - settings-drop-down-component custom drop down for settings
+ * @property {string} ADD_ITINEARY_MODAL - add-itineary-modal-component custom drop down for settings
  */
 /** @type {Components} */
 export const COMPONENTS = {
   SEARCH_DROP_DOWN: 'search-drop-down-component',
   SETTINGS_DROP_DOWN: 'settings-drop-down-component',
+  ADD_ITINEARY_MODAL: 'add-itineary-modal-component',
 };
 
 /**
@@ -24,6 +27,7 @@ export const ELEMENT_TAGS = {
   SearchDropDownComponent: 'search-drop-down',
   SettingsDropDownComponent: 'settings-drop-down',
   SettingsGear: 'settings-gear',
+  ItinearyModalComponent: 'itineary-modal',
 };
 
 /**
@@ -45,6 +49,10 @@ export const CUSTOM_ELEMENTS = new Map()
   .set(
     ELEMENT_TAGS.SearchDropDownComponent,
     getElementByID(ELEMENT_TAGS.SearchDropDownComponent)
+  )
+  .set(
+    ELEMENT_TAGS.ItinearyModalComponent,
+    getElementByID(ELEMENT_TAGS.ItinearyModalComponent)
   );
 
 /**
@@ -94,6 +102,10 @@ export function createComponent(component) {
       // @ts-ignore
       // customElements.define(component, SettingsDropDown);
       checkForCustomElement(component, SettingsDropDown);
+      break;
+    case COMPONENTS.ADD_ITINEARY_MODAL:
+      checkForCustomElement(component, AddItinearyModal);
+      break;
     default:
       break;
   }
@@ -109,23 +121,29 @@ function checkForCustomElement(component, constructor) {
   }
 }
 
-/**
- * @param {MouseEvent} event
- */
-function closePopUps(event) {
-  console.log('EVENT', event.target);
-  if (
-    CUSTOM_ELEMENTS.has(ELEMENT_TAGS.SettingsDropDownComponent) &&
-    document.querySelector(COMPONENTS.SETTINGS_DROP_DOWN) &&
-    // @ts-ignore
-    document
-      .getElementById(ELEMENT_TAGS.SettingsDropDownComponent)
-      // @ts-ignore
-      .hasShowClassAttribute()
-  ) {
-    CUSTOM_ELEMENTS.get(
-      ELEMENT_TAGS.SettingsDropDownComponent
-      // @ts-ignore
-    ).toggleDropDown();
-  }
-}
+// /**
+//  * @param {MouseEvent} event
+//  */
+// window.onclick = function (event) {
+//   console.log('EVENT-TARGE', event.target);
+//   if (
+//     event.target === CUSTOM_ELEMENTS.get(ELEMENT_TAGS.ItinearyModalComponent)
+//   ) {
+//     CUSTOM_ELEMENTS.get(ELEMENT_TAGS.ItinearyModalComponent).style.display =
+//       'none';
+//     // @ts-ignore
+//   } else if (
+//     event.target !==
+//       CUSTOM_ELEMENTS.get(ELEMENT_TAGS.SettingsDropDownComponent) &&
+//     CUSTOM_ELEMENTS.get(
+//       ELEMENT_TAGS.SettingsDropDownComponent
+//     // @ts-ignore
+//     ).hasShowClassAttribute()
+//   ) {
+//     // @ts-ignore
+//     CUSTOM_ELEMENTS.get(
+//       ELEMENT_TAGS.SettingsDropDownComponent
+//     // @ts-ignore
+//     ).toggleDropDown();
+//   }
+// };

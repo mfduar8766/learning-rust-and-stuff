@@ -5,7 +5,6 @@ use serde_derive::{Deserialize, Serialize};
 use std::fs;
 use tracing::{error, info};
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     pub email: String,

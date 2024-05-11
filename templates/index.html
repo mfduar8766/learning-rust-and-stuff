@@ -1,17 +1,9 @@
 {%- import "forms.html" as scope -%}
+{%- import "macro.html" as base -%}
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="/assets/index.css" rel="stylesheet" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
-    <title>App</title>
-  </head>
+  {% call base::baseHeader() %}
   <body class="container flex flex-col justify-center mx-auto h-full w-full">
     <div
       id="base-element"
@@ -20,6 +12,5 @@
       <div id="app">{% call scope::logInForm(api_url) %}</div>
     </div>
   </body>
-  <script src="https://unpkg.com/htmx.org@1.9.11"></script>
-  <script src="/assets/bundle.js"></script>
-</html>
+  {% call base::baseFooter() %}
+  </html>
