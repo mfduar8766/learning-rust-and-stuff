@@ -1,93 +1,169 @@
+use crate::CONFIG;
 use anyhow::Error;
-use mongodb::{options::ClientOptions, Client, Database};
 use serde_derive::{Deserialize, Serialize};
-use std::{
-    env,
-    fs::{self},
-    vec,
-};
-use tracing::{error, info};
+use sqlx::{migrate::MigrateDatabase, postgres::PgPoolOptions};
+use sqlx::{Pool, Postgres};
+use tracing::{error, info, warn};
 
-#[derive(Debug, Serialize, Deserialize, Default)]
-pub struct User {
+#[derive(Default, Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Users {
+    id: i32,
     pub email: String,
     pub first_name: String,
     pub last_name: String,
     pub dob: String,
+    pub created_at: chrono::DateTime<chrono::Local>,
+    pub last_login: Option<chrono::DateTime<chrono::Local>>,
+    pub user_name: String,
     password: String,
 }
 
-impl User {
-    fn new() -> Self {
-        return Self {
-            email: String::from("test@tester12.com"),
-            password: String::from("123"),
-            first_name: String::from("John"),
-            last_name: String::from("Doe"),
-            dob: String::from("1992/06/07"),
-        };
-    }
+// impl Users {
+//     fn new() -> Self {
+//         let dt = Local::now();
+//         let naive_utc = dt.naive_utc();
+//         let offset = dt.offset().clone();
+//         let created_at = DateTime::<Local>::from_naive_utc_and_offset(naive_utc, offset);
+//         return Self {
+//             email: String::from("test@tester12.com"),
+//             password: String::from("123"),
+//             first_name: String::from("John"),
+//             last_name: String::from("Doe"),
+//             dob: String::from("06/07/1992"),
+//             id: 1,
+//             created_at,
+//             user_name: String::from("johnDoe"),
+//             last_login: None,
+//         };
+//     }
+// }
+
+#[derive(Debug, Default, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Itinieary {
+    pub id: i32,
+    pub destination: String,
+    pub resource_id: String,
+    pub departure: chrono::DateTime<chrono::Local>,
+    pub arrival: chrono::DateTime<chrono::Local>,
+    pub over_all_budget: String,
+    pub user_id: i32,
+    pub created_at: chrono::DateTime<chrono::Local>,
 }
 
-#[derive(Debug)]
-pub struct Iteniary {}
-
-impl Iteniary {
-    fn new() -> Self {
-        return Self {};
-    }
-}
+// impl Itinieary {
+//     fn new(user_id: i32) -> Self {
+//         let dt = Local::now();
+//         let naive_utc = dt.naive_utc();
+//         let offset = dt.offset().clone();
+//         let created_at = DateTime::<Local>::from_naive_utc_and_offset(naive_utc, offset);
+//         let departure = Local.with_ymd_and_hms(dt.year(), 5, 22, 8, 0, 0).unwrap();
+//         let arrival = Local.with_ymd_and_hms(dt.year(), 5, 23, 20, 0, 0).unwrap();
+//         return Self {
+//             id: 1,
+//             destination: String::from("Germany"),
+//             resource_id: String::from("Germany.png"),
+//             departure,
+//             arrival,
+//             over_all_budget: String::from("$100,000.00"),
+//             user_id,
+//             created_at,
+//         };
+//     }
+// }
 
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct Db {
-    pub user: User,
-    pub iteniary: Vec<Iteniary>,
-    pub db: Database
+    pub user: Users,
+    pub iteniary: Vec<Itinieary>,
+    pub db: Pool<Postgres>,
+    is_authenticated: bool,
 }
 
 impl Db {
-    pub fn new(db: Database) -> Self {
+    pub fn new(pg_db: Pool<Postgres>) -> Self {
         return Self {
-            user: User::new(),
-            iteniary: vec![Iteniary::new()],
-            db
+            db: pg_db,
+            is_authenticated: false,
+            user: Users::default(),
+            iteniary: vec![Itinieary::default()],
         };
     }
-
-    pub fn authenticate(&self, email: &str, password: &str) -> bool {
+    pub async fn authenticate(&mut self, email: &str, password: &str) -> bool {
         if email.len() == 0 || password.len() == 0 {
             return false;
-        } else if email.contains("test@tester12.com") && password.contains("123") {
-            return true;
-        } else {
-            return false;
         }
+        let check_user_name_and_password = format!(
+            "SELECT DISTINCT FROM {} WHERE email = ? AND password = ?",
+            CONFIG.lock().unwrap().get_envs().db_users
+        );
+        match sqlx::query_as::<_, Users>(&check_user_name_and_password)
+            .bind(email)
+            .bind(password)
+            .fetch_one(&self.db)
+            .await
+        {
+            Ok(users) => {
+                info!("db::authenticate()::user:{:?}", users);
+                self.user = users;
+                let get_itinearies = format!(
+                    "SELECT DISTINCT FROM {} WHERE user_id = ?",
+                    CONFIG.lock().unwrap().get_envs().db_itineary
+                );
+                self.is_authenticated = true;
+                match sqlx::query_as::<_, Itinieary>(&get_itinearies)
+                    .bind(self.user.id)
+                    .fetch_all(&self.db)
+                    .await
+                {
+                    Ok(itineary) => {
+                        self.iteniary = itineary;
+                        return true;
+                    }
+                    Err(e) => {
+                        warn!("db::authenticate()::error getting itinearies:{}", e);
+                        return false;
+                    }
+                }
+            }
+            Err(e) => {
+                warn!("db::authenticate()::error:{}", e);
+                return false;
+            }
+        }
+    }
+    pub fn set_is_authenticated(&mut self, value: bool) {
+        self.is_authenticated = value;
     }
 }
 
-pub async fn create_db(file: &str) -> Result<mongodb::Database, Error> {
-    let mut client_options = ClientOptions::parse(
-        env::var("MONGODB_URL").unwrap_or(("mongodb://localhost:27017").to_string()),
-    )
-    .await?;
-    client_options.app_name = Some("rust-app".to_string());
-    let client = match Client::with_options(client_options) {
-        Ok(c) => c,
+pub fn authenticate(email: &str, password: &str) -> bool {
+    if email.len() == 0 || password.len() == 0 {
+        return false;
+    } else if email.contains("test@tester12.com") && password.contains("123") {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+pub async fn connect_to_db() -> Result<Db, Error> {
+    if !sqlx::Postgres::database_exists(&CONFIG.lock().unwrap().get_envs().db_url)
+        .await
+        .unwrap_or(false)
+    {
+        return Err(anyhow::Error::msg("database does not exist"));
+    }
+    let pool = match PgPoolOptions::new()
+        .max_connections(CONFIG.lock().unwrap().get_envs().max_connections)
+        .connect(&CONFIG.lock().unwrap().get_envs().db_url)
+        .await
+    {
+        Ok(res) => res,
         Err(e) => {
             error!("error creating DB connection: {}", e);
             return Err(e.into());
         }
     };
-    let db = client.database(&env::var("DB_NAME").unwrap_or("travel".to_string()));
-    let _ = db.create_collection("users", None).await?;
-    if fs::metadata(file).is_ok() {
-        let user: User = serde_json::from_str(file).unwrap();
-        info!("USER: {:?}", user);
-    }
-    // List the names of the collections in that database.
-    for collection_name in db.list_collection_names(None).await? {
-        println!("{}", collection_name);
-    }
-    return Ok(db);
+    return Ok(Db::new(pool));
 }

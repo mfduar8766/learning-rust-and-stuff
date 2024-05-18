@@ -1,30 +1,54 @@
 version: '3.8'
 
 services:
-  mongodb:
-    container_name: mongodb
-    image: mongo:latest
+  postgres-db:
+    image: postgres
     restart: always
-    ports:
-      - 27017:27017
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
     env_file:
       - .env
     volumes:
       - data-volume:/data/db
+    ports:
+      - 5432:5432
     healthcheck:
       test:
         [
-          'CMD',
-          'mongosh',
-          '--quiet',
-          'mongodb/travel',
-          '--eval',
-          "'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'",
+          'CMD-SHELL',
+          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'",
         ]
       interval: 10s
-      timeout: 10s
+      timeout: 30s
       retries: ${MAX_DB_CONNECT_RETRIES}
       start_period: 40s
+    networks:
+      - node-network
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+
+  postgres-seed:
+    container_name: postgres-seed
+    image: postgres-seed
+    build:
+      context: ./postgres-seed
+      dockerfile: ./Dockerfile
+    depends_on:
+      - postgres-db
+    links:
+      - postgres-db
     networks:
       - node-network
 
@@ -39,19 +63,6 @@ services:
   #     - cache:/data
   #   networks:
   #     - node-network
-
-  mongo-seed:
-    container_name: mongo-seed
-    image: mongo-seed
-    build:
-      context: ./mongo-seed
-      dockerfile: ./Dockerfile
-    depends_on:
-      - mongodb
-    links:
-      - mongodb
-    networks:
-      - node-network
 
   # app-users:
   #   container_name: app-users

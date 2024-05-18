@@ -8,8 +8,11 @@ use crate::{
 use askama::Template;
 use axum::{
     extract::{Path, State},
-    http::{HeaderMap, StatusCode},
-    response::{Html, IntoResponse},
+    http::{
+        header::{CONTENT_DISPOSITION, CONTENT_TYPE},
+        HeaderMap, StatusCode,
+    },
+    response::{AppendHeaders, Html, IntoResponse},
     Form, Json,
 };
 use std::{
@@ -22,9 +25,91 @@ pub async fn index(
     State(state): State<Arc<Mutex<ApplicationState>>>,
     headers: HeaderMap,
 ) -> types::AxumResponse {
-    let view_params = views::types::ViewsParams::new(ViewParamsOptions { user: None });
+    let view_params = views::types::ViewsParams::new(ViewParamsOptions {
+        user: None,
+        itineary: None,
+    });
+    info!("handlers::index()");
     let state_instance = state.lock().unwrap();
     return renderers::reder_index(state_instance, headers, view_params);
+}
+
+pub async fn handle_login(
+    State(state): State<Arc<Mutex<ApplicationState>>>,
+    mut headers: HeaderMap,
+    Form(payload): Form<types::LogInForm>,
+) -> types::AxumResponse {
+    info!("handlers::handleLogIn()");
+    headers.insert("Content-Type", "text/html".parse().unwrap());
+    headers.insert("HX-Location", "/dash-board".parse().unwrap());
+    let state_lock = &mut state.lock().unwrap();
+    if !state_lock
+        .db
+        .authenticate(&payload.email, &payload.password)
+        .await
+    {
+        warn!("handlers::handleLogIn():email or password is invalid");
+        return renderers::render_error_message("email or password is invalid. Please try again.");
+    }
+    state_lock
+        .state
+        .change_state(StateNames::DashBoard.as_string().to_string());
+    let view_params = Some(views::types::ViewsParams {
+        user: Some(take(&mut state_lock.db.user)),
+        itineary: None,
+    });
+    return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
+    // (
+    //     StatusCode::OK,
+    //     [
+    //         ("Content-type", "text/html"),
+    //         ("HX-Redirect", "/dash-board"),
+    //     ],
+    //     renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params),
+    // )
+}
+
+pub async fn handle_logout(
+    State(state): State<Arc<Mutex<ApplicationState>>>,
+    mut headers: HeaderMap,
+) -> types::AxumResponse {
+    info!("handlers::handleLogOut()");
+    headers.insert("Content-Type", "text/html".parse().unwrap());
+    let state_lock = &mut state.lock().unwrap();
+    state_lock.db.set_is_authenticated(false);
+    state_lock
+        .state
+        .change_state(StateNames::Login.as_string().to_string());
+    let view_params: Option<views::types::ViewsParams> = Some(views::types::ViewsParams {
+        user: None,
+        itineary: None,
+    });
+    return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
+}
+
+pub async fn get_image(Path(resource_id): Path<String>) -> impl IntoResponse {
+    let path = &format!("../assets/{}", resource_id);
+    info!("handlers::getImage()::resource_id:{}", resource_id);
+    let file = match tokio::fs::File::open(path).await {
+        Ok(file) => file,
+        Err(err) => return Err((StatusCode::NOT_FOUND, format!("image not found: {}", err))),
+    };
+    let content_type = match mime_guess::from_path(&path).first_raw() {
+        Some(mime) => mime,
+        None => {
+            return Err((
+                StatusCode::BAD_REQUEST,
+                "MIME Type couldn't be determined".to_string(),
+            ))
+        }
+    };
+    let stream = tokio_util::io::ReaderStream::new(file);
+    let body = axum::body::Body::from_stream(stream);
+    let headers = AppendHeaders([
+        (CONTENT_TYPE, content_type),
+        (CONTENT_DISPOSITION, "imag from user iteniary"),
+    ]);
+    Ok((headers, body))
 }
 
 pub async fn health_check() -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
@@ -181,31 +266,6 @@ pub async fn add_todos(
         Ok(result) => Html(result),
         Err(_) => renderers::render_page_not_found(),
     };
-}
-
-pub async fn handle_login(
-    State(state): State<Arc<Mutex<ApplicationState>>>,
-    mut headers: HeaderMap,
-    Form(payload): Form<types::LogInForm>,
-) -> types::AxumResponse {
-    info!("handlers::handleLogIn()");
-    headers.insert("Content-Type", "text/html".parse().unwrap());
-    let state_lock = &mut state.lock().unwrap();
-    if !state_lock
-        .db
-        .authenticate(&payload.email, &payload.password)
-    {
-        warn!("handlers::handleLogIn():email or password is invalid");
-        return renderers::render_error_message("email or password is invalid. Please try again.");
-    }
-    // let state_lock = &mut state.lock().unwrap().state;
-    state_lock
-        .state
-        .change_state(StateNames::DashBoard.as_string().to_string());
-    let view_params = Some(views::types::ViewsParams {
-        user: Some(take(&mut state_lock.db.user)),
-    });
-    return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
 }
 
 fn get_state_from_headers(headers: HeaderMap) -> &'static str {

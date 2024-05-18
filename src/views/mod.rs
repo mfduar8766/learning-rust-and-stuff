@@ -13,7 +13,7 @@ pub mod views {
     #[derive(Template)]
     #[template(path = "dashBoard.html")]
     pub struct DashBoardTemplate {
-        pub user: db::User,
+        pub user: db::Users,
     }
 
     #[derive(Template)]

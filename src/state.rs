@@ -69,7 +69,7 @@ impl ApplicationState {
         return Self {
             todos: todos::init_todods(),
             state: State::default(),
-            db, //db::Db::new(),
+            db,
         };
     }
 }
