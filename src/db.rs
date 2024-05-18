@@ -18,26 +18,6 @@ pub struct Users {
     password: String,
 }
 
-// impl Users {
-//     fn new() -> Self {
-//         let dt = Local::now();
-//         let naive_utc = dt.naive_utc();
-//         let offset = dt.offset().clone();
-//         let created_at = DateTime::<Local>::from_naive_utc_and_offset(naive_utc, offset);
-//         return Self {
-//             email: String::from("test@tester12.com"),
-//             password: String::from("123"),
-//             first_name: String::from("John"),
-//             last_name: String::from("Doe"),
-//             dob: String::from("06/07/1992"),
-//             id: 1,
-//             created_at,
-//             user_name: String::from("johnDoe"),
-//             last_login: None,
-//         };
-//     }
-// }
-
 #[derive(Debug, Default, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Itinieary {
     pub id: i32,
@@ -49,27 +29,6 @@ pub struct Itinieary {
     pub user_id: i32,
     pub created_at: chrono::DateTime<chrono::Local>,
 }
-
-// impl Itinieary {
-//     fn new(user_id: i32) -> Self {
-//         let dt = Local::now();
-//         let naive_utc = dt.naive_utc();
-//         let offset = dt.offset().clone();
-//         let created_at = DateTime::<Local>::from_naive_utc_and_offset(naive_utc, offset);
-//         let departure = Local.with_ymd_and_hms(dt.year(), 5, 22, 8, 0, 0).unwrap();
-//         let arrival = Local.with_ymd_and_hms(dt.year(), 5, 23, 20, 0, 0).unwrap();
-//         return Self {
-//             id: 1,
-//             destination: String::from("Germany"),
-//             resource_id: String::from("Germany.png"),
-//             departure,
-//             arrival,
-//             over_all_budget: String::from("$100,000.00"),
-//             user_id,
-//             created_at,
-//         };
-//     }
-// }
 
 #[derive(Debug)]
 #[allow(dead_code)]
