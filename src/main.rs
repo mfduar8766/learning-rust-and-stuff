@@ -9,8 +9,8 @@ mod handlers;
 mod json_payload;
 mod logger;
 mod renderers;
+mod router;
 mod state;
-mod todos;
 mod types;
 mod utils;
 mod views;
@@ -39,7 +39,7 @@ async fn main() -> Result<(), Error> {
     info!("Listening on port {}...\n", listener.local_addr().unwrap());
     match axum::serve(listener, app.into_make_service()).await {
         Ok(()) => {
-            info!("Listening on: {}...\n", conf.url);
+            info!("Listening on: {}...\n", CONFIG.lock().unwrap().url);
             return Ok(());
         }
         Err(err) => {

@@ -1,13 +1,8 @@
-
-use crate::{state::State, todos::Todos};
+use crate::state::State;
 use serde_derive::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JsonPayloadParams {
-    pub todos: Option<Vec<Todos>>,
-    pub todo: Option<Todos>,
-    pub id: Option<Uuid>,
     state: Option<State>,
 }
 
@@ -19,18 +14,8 @@ pub struct JsonPayload {
 }
 
 impl JsonPayloadParams {
-    pub fn new(
-        todos: Option<Vec<Todos>>,
-        todo: Option<Todos>,
-        id: Option<Uuid>,
-        state: Option<State>,
-    ) -> Self {
-        return Self {
-            todos,
-            todo,
-            id,
-            state,
-        };
+    pub fn new(state: Option<State>) -> Self {
+        return Self { state };
     }
 }
 

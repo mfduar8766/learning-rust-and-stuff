@@ -88,11 +88,15 @@ impl Config {
             HeaderName::from_static("hx-target"),
             HeaderName::from_static("hx-current-url"),
             HeaderName::from_static("hx-request"),
+            HeaderName::from_static("hx-redirect"),
+            HeaderName::from_static("hx-location"),
+            HeaderName::from_static("hx-trigger"),
+            ACCESS_CONTROL_ALLOW_ORIGIN,
             CONTENT_TYPE,
             ACCEPT,
         ]);
         let cors = CorsLayer::new()
-            .allow_origin(self.url.parse::<HeaderValue>().unwrap())
+            .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
             .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
             .allow_credentials(false)
             .allow_headers(allowed_headers);

@@ -1,11 +1,31 @@
+{% macro baseHeader() %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="/assets/index.css" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+  />
+  <title>App</title>
+</head>
+{% endmacro %}
+
+{% macro baseFooter %}
+<script src="https://unpkg.com/htmx.org@1.9.11"></script>
+<script src="/assets/bundle.js"></script>
+{% endmacro %}
+
 {% macro heading(arg) %}
 <h1>{{arg}}</h1>
-{% endmacro %} {% macro searchBox() %}
+{% endmacro %}
+
+{% macro searchBox() %}
 <div class="w-full h-full">
   <div class="flex justify-center items-center flex-col w-full h-full dropdown">
     <div class="w-full">
       <input
-        class="w-full rounded border-gray"
+        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline w-full rounded border-gray"
         placeholder="search for a location..."
         type="text"
         name="itemiary-search"
@@ -17,37 +37,52 @@
     ></search-drop-down-component>
   </div>
 </div>
-{% endmacro %} {% macro header(user) %}
-<div class="main-header">
-  <div class="flex justify-evenly items-center w-1/4">
-    <div>
-      <h2>Welcome {{ user.first_name }} {{ user.last_name }}</h2>
-    </div>
-    <div class="spacer-1"></div>
-    <div>
-      <i style="font-size: large" class="fa fa-user"></i>
-    </div>
+{% endmacro %}
+
+{% macro header(user, api_url) %}
+<nav class="flex items-baseline justify-between flex-wrap bg-teal-500 p-6">
+  <div class="flex items-center flex-shrink-0 text-white mr-6">
+    <span class="font-semibold text-xl tracking-tight mr-2"
+      >Welcome {{ user.first_name }} {{ user.last_name }}
+    </span>
+    <i style="font-size: xx-large" class="text-lg fa fa-user"></i>
   </div>
-
-  <div class="spacer-5"></div>
-
-  {% call searchBox() %}
-
-  <div class="flex flex-row justify-start items-center w-full h-full">
-    <div class="spacer-5"></div>
-    <div style="width: 10%">
+  <div
+    class="w-full lg:items-baseline block flex-grow lg:flex lg:justify-center lg:w-auto"
+  >
+    <div
+      class="w-full block lg:flex flex-col lg:justify-center lg:items-center lg:flex-grow lg:w-auto mr-2"
+    >
       <input
-        class="w-full rounded bg-white border-black cursor"
-        type="submit"
-        value="Search"
+        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline w-full rounded border-gray"
+        placeholder="search for a location..."
+        type="text"
+        name="itemiary-search"
+        id="filter-search"
       />
+      <search-drop-down-component
+        id="search-drop-down"
+      ></search-drop-down-component>
     </div>
-    <div class="spacer-5"></div>
-    <div class="flex justify-end w-full">
-      <div class="w-full">
-        <i style="font-size: large" class="cursor fa fa-gear"></i>
+    <div class="flex items-center flex-shrink-0 text-white mr-6">
+      <button
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-3"
+        type="submit"
+      >
+        Search
+      </button>
+      <div class="w-full flex flex-col items-center">
+        <i
+          style="font-size: xx-large"
+          id="settings-gear"
+          class="cursor-pointer fa fa-gear"
+        ></i>
+        <settings-drop-down-component
+          id="settings-drop-down"
+          data="{{api_url}}"
+        ></settings-drop-down-component>
       </div>
     </div>
   </div>
-</div>
+</nav>
 {% endmacro %}

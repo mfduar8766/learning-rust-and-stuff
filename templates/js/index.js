@@ -1,22 +1,36 @@
 import {
   ELEMENT_TAGS,
-  createSearchDropDownComponent,
+  createComponent,
   toggleDropDown,
-  handleRemoveElements,
   ELEMENTS,
+  COMPONENTS,
 } from './utils';
 
+// document.addEventListener('htmx:afterRequest', (event) => {
+//   console.log('EVENT', event);
+//   // @ts-ignore
+//   if (event.detail.target.id === 'app') {
+//     window.location.href = '/dash-board';
+//   }
+// });
+
+// if (document.getElementById('log-in-form')) {
+//   handleRemoveElements();
+// }
+
 if (
-  ELEMENTS.has(ELEMENT_TAGS.DashBoard) &&
-  ELEMENTS.has(ELEMENT_TAGS.FilterSearch) &&
   ELEMENTS.get(ELEMENT_TAGS.DashBoard) &&
-  ELEMENTS.has(ELEMENT_TAGS.FilterSearch)
+  ELEMENTS.get(ELEMENT_TAGS.FilterSearch) &&
+  ELEMENTS.get(ELEMENT_TAGS.SettingsGear)
 ) {
-  createSearchDropDownComponent();
+  createComponent(COMPONENTS.SEARCH_DROP_DOWN);
+  createComponent(COMPONENTS.SETTINGS_DROP_DOWN);
   ELEMENTS.get(ELEMENT_TAGS.FilterSearch).addEventListener(
     'click',
     toggleDropDown
   );
-} else {
-  handleRemoveElements();
+  ELEMENTS.get(ELEMENT_TAGS.SettingsGear).addEventListener(
+    'click',
+    toggleDropDown
+  );
 }

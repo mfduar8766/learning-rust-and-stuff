@@ -1,0 +1,17 @@
+{% extends "index.html" %}
+
+{% block baseHeader %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="/assets/index.css" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+  />
+  <title>App</title>
+</head>
+{% endblock baseHeader %} {% block baseFooter %}
+<script src="https://unpkg.com/htmx.org@1.9.11"></script>
+<script src="/assets/bundle.js"></script>
+{% endblock baseFooter %}
