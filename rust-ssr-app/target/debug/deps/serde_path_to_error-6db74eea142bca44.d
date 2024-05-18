@@ -1,0 +1,9 @@
+/Users/matheusduarte/Desktop/rust-travel-app/rust-ssr-app/target/debug/deps/libserde_path_to_error-6db74eea142bca44.rmeta: /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/lib.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/de.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/path.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/ser.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/wrap.rs
+
+/Users/matheusduarte/Desktop/rust-travel-app/rust-ssr-app/target/debug/deps/serde_path_to_error-6db74eea142bca44.d: /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/lib.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/de.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/path.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/ser.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/wrap.rs
+
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/lib.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/de.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/path.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/ser.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.16/src/wrap.rs:

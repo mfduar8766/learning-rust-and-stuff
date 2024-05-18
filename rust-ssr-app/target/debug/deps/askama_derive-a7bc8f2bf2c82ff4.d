@@ -1,0 +1,9 @@
+/Users/matheusduarte/Desktop/rust-travel-app/rust-ssr-app/target/debug/deps/libaskama_derive-a7bc8f2bf2c82ff4.dylib: /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/lib.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/config.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/generator.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/heritage.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/input.rs
+
+/Users/matheusduarte/Desktop/rust-travel-app/rust-ssr-app/target/debug/deps/askama_derive-a7bc8f2bf2c82ff4.d: /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/lib.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/config.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/generator.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/heritage.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/input.rs
+
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/lib.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/config.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/generator.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/heritage.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/askama_derive-0.12.5/src/input.rs:

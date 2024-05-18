@@ -1,0 +1,13 @@
+/Users/matheusduarte/Desktop/rust-travel-app/rust-ssr-app/target/debug/deps/libzerocopy-11a835b8ec03d131.rmeta: /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/lib.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/macros.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/macro_util.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/post_monomorphization_compile_fail_tests.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/util.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/third_party/rust/layout.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/wrappers.rs
+
+/Users/matheusduarte/Desktop/rust-travel-app/rust-ssr-app/target/debug/deps/zerocopy-11a835b8ec03d131.d: /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/lib.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/macros.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/macro_util.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/post_monomorphization_compile_fail_tests.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/util.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/third_party/rust/layout.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/wrappers.rs
+
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/lib.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/macros.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/macro_util.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/post_monomorphization_compile_fail_tests.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/util.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/third_party/rust/layout.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/zerocopy-0.7.34/src/wrappers.rs:
+
+# env-dep:CARGO_PKG_VERSION=0.7.34

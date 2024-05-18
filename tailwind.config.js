@@ -1,5 +1,5 @@
 module.exports = {
-  content: ["templates/**/*.{html, rs,js,ts}"],
+  content: ["./rust-ssr-app/templates/**/*.{html, rs,js,ts}"],
   theme: { extend: {}, },
   plugins: [],
 }

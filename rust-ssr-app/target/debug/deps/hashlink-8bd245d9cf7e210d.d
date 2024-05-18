@@ -1,0 +1,10 @@
+/Users/matheusduarte/Desktop/rust-travel-app/rust-ssr-app/target/debug/deps/libhashlink-8bd245d9cf7e210d.rmeta: /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/lib.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/linked_hash_map.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/linked_hash_set.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/lru_cache.rs
+
+/Users/matheusduarte/Desktop/rust-travel-app/rust-ssr-app/target/debug/deps/libhashlink-8bd245d9cf7e210d.rlib: /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/lib.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/linked_hash_map.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/linked_hash_set.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/lru_cache.rs
+
+/Users/matheusduarte/Desktop/rust-travel-app/rust-ssr-app/target/debug/deps/hashlink-8bd245d9cf7e210d.d: /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/lib.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/linked_hash_map.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/linked_hash_set.rs /Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/lru_cache.rs
+
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/lib.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/linked_hash_map.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/linked_hash_set.rs:
+/Users/matheusduarte/.cargo/registry/src/index.crates.io-6f17d22bba15001f/hashlink-0.8.4/src/lru_cache.rs:

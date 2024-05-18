@@ -4,7 +4,7 @@
   "description": "",
   "main": "templates/index.js",
   "scripts": {
-    "tailwind": "npx tailwindcss -i templates/index.css -o dist/index.css --watch",
+    "tailwind": "npx tailwindcss -i  ./rust-ssr-app/templates/index.css -o dist/index.css --watch",
     "client": "npx webpack --watch --mode development",
     "server": "cargo watch -x run -w src",
     "start": "npm run tailwind && npm run client && npm run server"
