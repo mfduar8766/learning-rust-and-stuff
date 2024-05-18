@@ -18,6 +18,7 @@ use std::{
     mem::take,
     sync::{Arc, Mutex},
 };
+use tokio::runtime::Runtime;
 use tokio_util;
 use tracing::{info, warn};
 
@@ -46,11 +47,12 @@ pub async fn handle_login(
     headers.insert("Content-Type", "text/html".parse().unwrap());
     headers.insert("HX-Location", "/dash-board".parse().unwrap());
     let state_lock = &mut state.lock().unwrap();
-    if !state_lock
-        .db
-        .authenticate(&payload.email, &payload.password)
-        .await
-    {
+    let is_authenticated = Runtime::new().unwrap().block_on(
+        state_lock
+            .db
+            .authenticate(&payload.email, &payload.password),
+    );
+    if !is_authenticated {
         warn!("handlers::handleLogIn():email or password is invalid");
         return renderers::render_error_message("email or password is invalid. Please try again.");
     }
