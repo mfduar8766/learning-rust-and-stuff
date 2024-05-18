@@ -1,17 +1,6 @@
 {
   "rust-analyzer.linkedProjects": [
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml",
-    "./Cargo.toml"
+    "./rust-ssr-app/Cargo.toml",
+    "./postgres-seed/Cargo.toml"
   ]
 }
