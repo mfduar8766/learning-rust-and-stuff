@@ -11,10 +11,9 @@ use axum::{
         header::{CONTENT_DISPOSITION, CONTENT_TYPE},
         HeaderMap, StatusCode,
     },
-    response::{AppendHeaders, Html, IntoResponse},
+    response::{AppendHeaders, IntoResponse},
     Form, Json,
 };
-use serde::Deserialize;
 use std::{
     mem::take,
     sync::{Arc, Mutex},
@@ -26,13 +25,16 @@ pub async fn index(
     State(state): State<Arc<Mutex<ApplicationState>>>,
     headers: HeaderMap,
 ) -> types::AxumResponse {
-    let view_params = views::types::ViewsParams::new(ViewParamsOptions {
+    let mut view_params = views::types::ViewsParams::new(ViewParamsOptions {
         user: None,
         itineary: None,
     });
-    info!("handlers::index()");
-    let state_instance = state.lock().unwrap();
-    return renderers::reder_index(&mut state_instance, headers, view_params);
+    let state_instance = &mut state.lock().unwrap();
+    if state_instance.db.is_authenticated() {
+        view_params.user = Some(take(&mut state_instance.db.user));
+        view_params.itineary = Some(take(&mut state_instance.db.iteniary));
+    }
+    return renderers::reder_index(state_instance, headers, view_params);
 }
 
 pub async fn handle_login(
@@ -56,8 +58,8 @@ pub async fn handle_login(
         .state
         .change_state(StateNames::DashBoard.as_string());
     let view_params = Some(views::types::ViewsParams {
-        user: Some(take(&mut state_lock.db.user)),
-        itineary: None,
+        user: Some(take(&mut state_lock.db.get_user())),
+        itineary: Some(take(&mut state_lock.db.iteniary)),
     });
     return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
     // (
@@ -136,33 +138,18 @@ pub async fn change_state(
     Ok(Json(payload.create_json_payload()))
 }
 
-pub async fn get_todos(
-    State(state): State<Arc<Mutex<ApplicationState>>>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let todo_list = take(state.lock().unwrap().todos.get_todos_as_mut());
-    let payload_params = json_payload::JsonPayloadParams::new(std::option::Option::Some(todo_list));
-    let payload = json_payload::JsonPayload::new(
-        format!("{}", StatusCode::OK),
-        std::option::Option::None,
-        payload_params,
-    );
-    Ok(Json(payload.create_json_payload()))
-}
-
-pub async fn index(
-    State(state): State<Arc<Mutex<ApplicationState>>>,
-    headers: HeaderMap,
-) -> types::AxumResponse {
-    let mut view_params = views::types::ViewsParams::new(ViewParamsOptions {
-        user: None,
-        itineary: None,
-    });
-    let state_instance = &mut state.lock().unwrap();
-    if state_instance.db.is_authenticated() {
-        view_params.user = Some(take(&mut state_instance.db.user));
-    }
-    return renderers::reder_index(state_instance, headers, view_params);
-}
+// pub async fn get_todos(
+//     State(state): State<Arc<Mutex<ApplicationState>>>,
+// ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+//     let todo_list = take(state.lock().unwrap().todos.get_todos_as_mut());
+//     let payload_params = json_payload::JsonPayloadParams::new(std::option::Option::Some(todo_list));
+//     let payload = json_payload::JsonPayload::new(
+//         format!("{}", StatusCode::OK),
+//         std::option::Option::None,
+//         payload_params,
+//     );
+//     Ok(Json(payload.create_json_payload()))
+// }
 
 fn get_state_from_headers(headers: HeaderMap) -> &'static str {
     let state = CustomHeaders::State;
@@ -181,29 +168,4 @@ fn get_state_from_headers(headers: HeaderMap) -> &'static str {
             return StateNames::as_string(&page_not_found);
         }
     };
-}
-
-pub async fn get_image(Path(resource_id): Path<String>) -> impl IntoResponse {
-    let path = &format!("../assets/{}", resource_id);
-    info!("handlers::getImage()::resource_id:{}", resource_id);
-    let file = match tokio::fs::File::open(path).await {
-        Ok(file) => file,
-        Err(err) => return Err((StatusCode::NOT_FOUND, format!("image not found: {}", err))),
-    };
-    let content_type = match mime_guess::from_path(&path).first_raw() {
-        Some(mime) => mime,
-        None => {
-            return Err((
-                StatusCode::BAD_REQUEST,
-                "MIME Type couldn't be determined".to_string(),
-            ))
-        }
-    };
-    let stream = tokio_util::io::ReaderStream::new(file);
-    let body = axum::body::Body::from_stream(stream);
-    let headers = AppendHeaders([
-        (CONTENT_TYPE, content_type),
-        (CONTENT_DISPOSITION, "imag from user iteniary"),
-    ]);
-    Ok((headers, body))
 }

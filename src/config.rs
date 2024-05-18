@@ -1,5 +1,5 @@
 use axum::http::{
-    header::{ACCEPT, CONTENT_TYPE},
+    header::{ACCEPT, ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE},
     HeaderName, HeaderValue, Method,
 };
 use std::env;

@@ -1,4 +1,5 @@
 use crate::state::StateNames;
+use crate::views::types::ViewsParams;
 use crate::{db, types, CONFIG};
 use crate::{state::ApplicationState, utils::AsString, views};
 use askama::Template;
@@ -28,7 +29,7 @@ pub fn handle_page_render(
             if state_name == StateNames::Login.as_string() {
                 let template = views::views::IndexTemplate {
                     state: state_name,
-                    api_url: &CONFIG.lock().unwrap().api_url,
+                    api_url: &CONFIG.lock().unwrap().url,
                 };
                 let render = template.render();
                 return match render {
@@ -36,23 +37,22 @@ pub fn handle_page_render(
                     Err(_) => render_page_not_found(),
                 };
             } else if state_name == StateNames::DashBoard.as_string() {
-                return match view_params {
-                    Some(view) => {
-                        return match view.user {
-                            Some(user) => {
-                                return match view_params {
-                                    Some(view) => match view.itineary {
-                                        Some(itineary) => render_dash_baord(user, itineary),
-                                        None => render_page_not_found(),
-                                    },
-                                    _ => render_page_not_found(),
-                                };
-                            }
-                            _ => render_page_not_found(),
-                        };
-                    }
-                    None => render_page_not_found(),
+                let view = match view_params {
+                    Some(view) => view,
+                    _ => ViewsParams::new(views::types::ViewParamsOptions {
+                        user: None,
+                        itineary: None,
+                    }),
                 };
+                let user = match view.user {
+                    Some(u) => u,
+                    _ => db::Users::default(),
+                };
+                let itineary = match view.itineary {
+                    Some(it) => it,
+                    _ => vec![db::Itinieary::default()],
+                };
+                return render_dash_baord(user, itineary);
             } else {
                 return render_page_not_found();
             }
@@ -76,11 +76,11 @@ pub fn render_page_not_found() -> types::AxumResponse {
     return Html(template.render().unwrap());
 }
 
-fn render_dash_baord(user: db::User, itineary: Vec<db::Itinieary>) -> types::AxumResponse {
+fn render_dash_baord(user: db::Users, itineary: Vec<db::Itinieary>) -> types::AxumResponse {
     let template = views::views::DashBoardTemplate {
         user,
-        iteniary,
-        api_url: &CONFIG.lock().unwrap().api_url,
+        itineary,
+        api_url: &CONFIG.lock().unwrap().url,
     };
     let render = template.render();
     match render {

@@ -5,11 +5,11 @@
 >
   {% call scope::header(user, api_url) %}
   <div class="mt-2 flex flex-wrap justify-start align-center">
-    {% for it in iteniary %}
-    <div class="mt-2 mr-2 max-w-sm rounded overflow-hidden shadow-lg">
+    {% for it in itineary %}
+    <div id="{{ it.id }}" class="mt-2 mr-2 max-w-sm rounded overflow-hidden shadow-lg">
       <img
         class="w-full"
-        src="{{ api_url }}image/{{it.image}}"
+        src="{{ api_url }}image/{{it.resource_id}}"
         alt="German city"
       />
       <div class="px-6 py-4">
@@ -34,7 +34,7 @@
         >
         <span
           class="cursor-pointer bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-          >View Itemiary</span
+          >View Itineary</span
         >
       </div>
     </div>

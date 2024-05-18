@@ -14,7 +14,6 @@ mod state;
 mod types;
 mod utils;
 mod views;
-mod router;
 use once_cell::sync::Lazy;
 use tracing_subscriber;
 

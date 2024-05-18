@@ -97,21 +97,8 @@ impl Db {
     pub fn is_authenticated(&self) -> bool {
         return self.is_authenticated;
     }
-    pub fn set_is_authenticated(&mut self) {
-        self.is_authenticated = false;
-    }
-    pub fn get_user(&mut self) -> &mut User {
+    pub fn get_user(&mut self) -> &mut Users {
         return &mut self.user;
-    }
-}
-
-pub fn authenticate(email: &str, password: &str) -> bool {
-    if email.len() == 0 || password.len() == 0 {
-        return false;
-    } else if email.contains("test@tester12.com") && password.contains("123") {
-        return true;
-    } else {
-        return false;
     }
 }
 
