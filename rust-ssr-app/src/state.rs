@@ -54,14 +54,17 @@ impl State {
 #[derive(Debug)]
 pub struct ApplicationState {
     pub state: State,
-    pub db: db::Db,
+    db_types: db::Db,
 }
 
 impl ApplicationState {
-    pub fn new(db: db::Db) -> Self {
+    pub fn new(db_types: db::Db) -> Self {
         return Self {
             state: State::default(),
-            db,
+            db_types,
         };
+    }
+    pub fn get_db_types(&mut self) -> &mut db::Db {
+        return &mut self.db_types;
     }
 }

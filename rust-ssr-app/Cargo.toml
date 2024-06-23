@@ -24,3 +24,5 @@ tokio-util = "0.7.10"
 tracing-subscriber = "0.3.18"
 sqlx = { version = "0.7", features = [ "runtime-tokio", "postgres", "chrono" ] }
 chrono = { version = "0.4.38", features = ["serde"] }
+futures = "0.3.30"
+axum-macros = "0.4.1"
