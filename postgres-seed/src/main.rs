@@ -1,10 +1,12 @@
 use anyhow::Error;
 use chrono::{Datelike, TimeZone};
+use chrono::{Local, Timelike, Utc};
 use dotenv::dotenv;
-use chrono::Local;
 use serde_derive::{Deserialize, Serialize};
 use sqlx::types::chrono::DateTime;
 use sqlx::{migrate::MigrateDatabase, postgres::PgPoolOptions, query, Executor};
+use std::thread::sleep;
+use std::time::Duration;
 use std::{env, process};
 use tokio;
 use tracing::{error, info};
@@ -31,8 +33,8 @@ struct Users {
     pub first_name: String,
     pub last_name: String,
     pub dob: String,
-    pub created_at: chrono::DateTime<chrono::Local>,
-    pub last_login: Option<chrono::DateTime<chrono::Local>>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub last_login: Option<chrono::DateTime<chrono::Utc>>,
     pub user_name: String,
     password: String,
 }
@@ -66,10 +68,21 @@ impl Envs {
 
 impl Users {
     fn new() -> Self {
-        let dt = Local::now();
-        let naive_utc = dt.naive_utc();
-        let offset = dt.offset().clone();
-        let created_at = DateTime::<Local>::from_naive_utc_and_offset(naive_utc, offset);
+        let dt = Utc::now();
+        // let dt = Local::now();
+        // let naive_utc = dt.naive_utc();
+        // let offset = dt.offset().clone();
+        // let created_at = DateTime::<Local>::from_naive_utc_and_offset(naive_utc, offset);
+        let created_at = Utc
+            .with_ymd_and_hms(
+                dt.year(),
+                dt.month(),
+                dt.day(),
+                dt.hour(),
+                dt.minute(),
+                dt.second(),
+            )
+            .unwrap();
         return Self {
             email: String::from("test@tester12.com"),
             password: String::from("123"),
@@ -89,21 +102,31 @@ struct Itinieary {
     pub id: i32,
     pub destination: String,
     pub resource_id: String,
-    pub departure: chrono::DateTime<chrono::Local>,
-    pub arrival: chrono::DateTime<chrono::Local>,
+    pub departure: chrono::DateTime<chrono::Utc>,
+    pub arrival: chrono::DateTime<chrono::Utc>,
     pub over_all_budget: String,
     pub user_id: i32,
-    pub created_at: chrono::DateTime<chrono::Local>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
 impl Itinieary {
     fn new(user_id: i32) -> Self {
-        let dt = Local::now();
-        let naive_utc = dt.naive_utc();
-        let offset = dt.offset().clone();
-        let created_at = DateTime::<Local>::from_naive_utc_and_offset(naive_utc, offset);
-        let departure = Local.with_ymd_and_hms(dt.year(), 5, 22, 8, 0, 0).unwrap();
-        let arrival = Local.with_ymd_and_hms(dt.year(), 5, 23, 20, 0, 0).unwrap();
+        let dt = Utc::now();
+        // let naive_utc = dt.to_utc();
+        // let offset = dt.offset().clone();
+        // let created_at =  //DateTime::<Utc>::from_naive_utc_and_offset(dt, dt.offset());
+        let created_at = Utc
+            .with_ymd_and_hms(
+                dt.year(),
+                dt.month(),
+                dt.day(),
+                dt.hour(),
+                dt.minute(),
+                dt.second(),
+            )
+            .unwrap();
+        let departure = Utc.with_ymd_and_hms(dt.year(), 5, 22, 8, 0, 0).unwrap();
+        let arrival = Utc.with_ymd_and_hms(dt.year(), 5, 23, 20, 0, 0).unwrap();
         return Self {
             id: 1,
             destination: String::from("Germany"),
@@ -117,13 +140,35 @@ impl Itinieary {
     }
 }
 
+async fn check_for_db(db_url: &str) -> bool {
+    return sqlx::Postgres::database_exists(db_url)
+        .await
+        .unwrap_or(false);
+}
+
 async fn connect_and_populate_db() -> Result<(), Error> {
     let envs = Envs::new();
-    info!("main::connectAndPopulateDB()::Envs: {:?}", envs);
-    if !sqlx::Postgres::database_exists(&envs.db_url)
-        .await
-        .unwrap_or(false)
-    {
+    info!("main::connectAndPopulateDB():{:?}", envs);
+    let mut retries = 0;
+    let mut connected = false;
+    loop {
+        if connected {
+            break;
+        }
+        if retries >= envs.max_db_connection_retries {
+            break;
+        }
+        info!(
+            "main::connectAndPopulateDB()::Attempting to connect to DB. Attempt number:{:?}",
+            retries
+        );
+        retries += 1;
+        connected = check_for_db(&envs.db_url).await;
+        sleep(Duration::from_secs(
+            envs.max_db_connection_retries.try_into().unwrap(),
+        ));
+    }
+    if !connected {
         return Err(anyhow::Error::msg("database does not exist"));
     }
     let pool = match PgPoolOptions::new()
@@ -239,9 +284,12 @@ async fn main() {
     dotenv().ok();
     tracing_subscriber::fmt::init();
     let _ = match connect_and_populate_db().await {
-        Ok(_) => info!("successfully created and populated tables"),
+        Ok(_) => {
+            info!("main()::successfully created and populated tables");
+            process::exit(0);
+        }
         Err(e) => {
-            error!("error exitig program: {}", e);
+            error!("main()::error exitig program: {}", e);
             process::exit(1);
         }
     };

@@ -14,14 +14,13 @@ use axum::{
     response::{AppendHeaders, IntoResponse},
     Form, Json,
 };
-use std::{
-    mem::take,
-    sync::{Arc, Mutex},
-};
-use tokio::runtime::Runtime;
+use axum_macros::debug_handler;
+use futures::lock::Mutex;
+use std::{mem::take, sync::Arc};
 use tokio_util;
 use tracing::{info, warn};
 
+#[debug_handler]
 pub async fn index(
     State(state): State<Arc<Mutex<ApplicationState>>>,
     headers: HeaderMap,
@@ -30,14 +29,15 @@ pub async fn index(
         user: None,
         itineary: None,
     });
-    let state_instance = &mut state.lock().unwrap();
-    if state_instance.db.is_authenticated() {
-        view_params.user = Some(take(&mut state_instance.db.user));
-        view_params.itineary = Some(take(&mut state_instance.db.iteniary));
+    let state_instance = &mut state.lock().await;
+    if state_instance.get_db_types().is_authenticated() {
+        view_params.user = Some(take(state_instance.get_db_types().get_user()));
+        view_params.itineary = Some(take(state_instance.get_db_types().get_itineary()));
     }
-    return renderers::reder_index(state_instance, headers, view_params);
+    return renderers::reder_index(&state_instance.state.get_state(), headers, view_params);
 }
 
+#[debug_handler]
 pub async fn handle_login(
     State(state): State<Arc<Mutex<ApplicationState>>>,
     mut headers: HeaderMap,
@@ -46,31 +46,47 @@ pub async fn handle_login(
     info!("handlers::handleLogIn()");
     headers.insert("Content-Type", "text/html".parse().unwrap());
     headers.insert("HX-Location", "/dash-board".parse().unwrap());
-    let state_lock = &mut state.lock().unwrap();
-    let is_authenticated = Runtime::new().unwrap().block_on(
-        state_lock
-            .db
-            .authenticate(&payload.email, &payload.password),
-    );
+    let mut is_authenticated = false;
+    let mut state_ref = state.lock().await;
+    let db_types = state_ref.get_db_types();
+    match db_types
+        .authenticate(&payload.email, &payload.password)
+        .await
+    {
+        Ok(()) => {
+            is_authenticated = true;
+        }
+        Err(_) => warn!("handlers::handleLogIn()::unable to login user not authenticated"),
+    };
     if !is_authenticated {
         warn!("handlers::handleLogIn():email or password is invalid");
         return renderers::render_error_message("email or password is invalid. Please try again.");
     }
-    state_lock
+    state
+        .lock()
+        .await
         .state
         .change_state(StateNames::DashBoard.as_string());
     let view_params = Some(views::types::ViewsParams {
-        user: Some(take(&mut state_lock.db.get_user())),
-        itineary: Some(take(&mut state_lock.db.iteniary)),
+        user: Some(take(db_types.get_user())),
+        itineary: Some(take(db_types.get_itineary())),
     });
-    return renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params);
+    // return utils::create_html_response(
+    //     StatusCode::OK,
+    //     [
+    //         ("Content-type", "text/html"),
+    //         ("HX-Location", "/dash-baord"),
+    //     ],
+    //     renderers::handle_page_render(&state.lock().await.state.get_state(), headers, view_params),
+    // );
+    return renderers::handle_page_render(&state_ref.state.get_state(), headers, view_params);
     // (
     //     StatusCode::OK,
     //     [
     //         ("Content-type", "text/html"),
-    //         ("HX-Redirect", "/dash-board"),
+    //         ("HX-Location", "/dash-board"),
     //     ],
-    //     renderers::handle_page_render(&state_lock.state.get_state(), headers, view_params),
+    //     renderers::handle_page_render(&state.lock().unwrap().state.get_state(), headers, view_params),
     // )
 }
 
@@ -80,8 +96,8 @@ pub async fn handle_logout(
 ) -> types::AxumResponse {
     info!("handlers::handleLogOut()");
     headers.insert("Content-Type", "text/html".parse().unwrap());
-    let state_lock = &mut state.lock().unwrap();
-    state_lock.db.set_is_authenticated(false);
+    let state_lock = &mut state.lock().await;
+    state_lock.get_db_types().set_is_authenticated(false);
     state_lock.state.change_state(StateNames::Login.as_string());
     let view_params: Option<views::types::ViewsParams> = Some(views::types::ViewsParams {
         user: None,
@@ -91,7 +107,7 @@ pub async fn handle_logout(
 }
 
 pub async fn get_image(Path(resource_id): Path<String>) -> impl IntoResponse {
-    let path = &format!("../../assets/{}", resource_id);
+    let path = &format!("../../images/{}", resource_id);
     info!("handlers::getImage()::resource_id:{}", resource_id);
     let file = match tokio::fs::File::open(path).await {
         Ok(file) => file,
@@ -128,7 +144,7 @@ pub async fn change_state(
     headers: HeaderMap,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let headers_state = get_state_from_headers(headers);
-    let mut state_lock = state.lock().unwrap();
+    let mut state_lock = state.lock().await;
     let updated_state = state_lock.state.change_state(&headers_state.to_string());
     let payload_params =
         json_payload::JsonPayloadParams::new(std::option::Option::Some(take(updated_state)));

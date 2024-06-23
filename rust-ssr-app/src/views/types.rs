@@ -7,6 +7,7 @@ pub struct ViewsParams {
     pub itineary: Option<Vec<db::Itinieary>>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ViewParamsOptions {
     pub user: Option<db::Users>,
     pub itineary: Option<Vec<db::Itinieary>>,

@@ -2,6 +2,27 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+//use std::sync::Mutex;
+
+// pub struct F(pub Mutex<config::Config>);
+// unsafe impl Send for F {}
+
+// #[derive(Debug)]
+// pub struct MyType(pub config::Config);
+// unsafe impl Send for MyType {}
+
+// impl Deref for MyType {
+//     type Target = config::Config;
+//     fn deref(&self) -> &Self::Target {
+//         return &self.0;
+//     }
+// }
+
+// impl DerefMut for MyType {
+//     fn deref_mut(&mut self) -> &mut Self::Target {
+//         return &mut self.0;
+//     }
+// }
 
 pub trait AsString {
     fn as_string(&self) -> &'static str;
@@ -42,4 +63,12 @@ impl AsString for CustomHeaders {
             &CustomHeaders::State => "state",
         }
     }
+}
+
+pub fn create_html_response(
+    code: axum::http::StatusCode,
+    response_headers: [(&str, &str); 2],
+    html: axum::response::Html<std::string::String>,
+) -> impl IntoResponse {
+    (code, response_headers, html);
 }
