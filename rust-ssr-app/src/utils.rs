@@ -1,7 +1,9 @@
 use axum::{
-    http::StatusCode,
+    body::{self, Body, HttpBody},
+    http::{header::CONTENT_TYPE, StatusCode},
     response::{IntoResponse, Response},
 };
+use serde_derive::{Deserialize, Serialize};
 //use std::sync::Mutex;
 
 // pub struct F(pub Mutex<config::Config>);
@@ -40,6 +42,56 @@ impl IntoResponse for AppError {
     }
 }
 
+#[derive(Serialize, Debug)]
+pub struct AppResponse<'a> {
+    pub http_status: i32,
+    pub body: String,
+    pub headers: [(&'a str, &'a str); 2],
+}
+
+impl<'a> AppResponse<'a> {
+    pub fn new(http_status: i32, body: &str, headers: [(&'a str, &'a str); 2]) -> Self {
+        return Self {
+            http_status,
+            headers,
+            body: body.to_string()
+        };
+    }
+}
+
+impl<'a> IntoResponse for AppResponse<'a> {
+    fn into_response(self) -> Response {
+        let status = match self.http_status {
+            200 => StatusCode::OK,
+            400 => StatusCode::BAD_REQUEST,
+            500 => StatusCode::INTERNAL_SERVER_ERROR,
+            _ => StatusCode::IM_A_TEAPOT,
+        };
+        (status, self.headers, self).into_response()
+    }
+}
+
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct AppResponse {
+//     pub body: String,
+// }
+
+// impl IntoResponse for AppResponse {
+//     fn into_response(self) -> Response<Body> {
+//         Response::builder()
+//             .status(StatusCode::OK)
+//             .header("Content-Type", "application/json")
+//             .body(self)
+//             .unwrap()
+//     }
+// }
+
+// impl<'a> IntoResponse for AppResponse<'a> {
+//     fn into_response(self) -> Response {
+//         return (self.status, self.headers, self.body).into_response();
+//     }
+// }
+
 /*
 This enables using `?` on functions that return `Result<_, anyhow::Error>` to turn them into
 `Result<_, AppError>`. That way you don't need to do that manually.
@@ -70,5 +122,5 @@ pub fn create_html_response(
     response_headers: [(&str, &str); 2],
     html: axum::response::Html<std::string::String>,
 ) -> impl IntoResponse {
-    (code, response_headers, html);
+    (code, response_headers, html).into_response();
 }

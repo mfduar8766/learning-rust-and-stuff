@@ -4,6 +4,7 @@ use crate::{
     types,
     utils::{AsString, CustomHeaders},
     views::{self, types::ViewParamsOptions},
+    CONFIG,
 };
 use axum::{
     extract::{Path, State},
@@ -16,9 +17,9 @@ use axum::{
 };
 use axum_macros::debug_handler;
 use futures::lock::Mutex;
-use std::{mem::take, sync::Arc};
-use tokio_util;
-use tracing::{info, warn};
+use std::{env, mem::take, sync::Arc};
+use tokio_util::{self};
+use tracing::{error, info, warn};
 
 #[debug_handler]
 pub async fn index(
@@ -42,14 +43,15 @@ pub async fn handle_login(
     State(state): State<Arc<Mutex<ApplicationState>>>,
     mut headers: HeaderMap,
     Form(payload): Form<types::LogInForm>,
-) -> types::AxumResponse {
+) -> impl IntoResponse {
     info!("handlers::handleLogIn()");
     headers.insert("Content-Type", "text/html".parse().unwrap());
     headers.insert("HX-Location", "/dash-board".parse().unwrap());
     let mut is_authenticated = false;
     let mut state_ref = state.lock().await;
-    let db_types = state_ref.get_db_types();
-    match db_types
+    // let db_types = state_ref.get_db_types();
+    match state_ref
+        .get_db_types()
         .authenticate(&payload.email, &payload.password)
         .await
     {
@@ -60,33 +62,56 @@ pub async fn handle_login(
     };
     if !is_authenticated {
         warn!("handlers::handleLogIn():email or password is invalid");
-        return renderers::render_error_message("email or password is invalid. Please try again.");
+        let mut h = HeaderMap::new();
+        h.insert(CONTENT_TYPE, "text/html".parse().unwrap());
+        h.insert("HX-Retarget", "#error-message".parse().unwrap());
+        h.insert("HX-Reswap", "innerHTML".parse().unwrap());
+        return (
+            StatusCode::BAD_REQUEST,
+            h,
+            renderers::render_error_message("email or password is invalid. Please try again."),
+        );
+        // return Response::builder()
+        //     .status(StatusCode::BAD_REQUEST)
+        //     .header(CONTENT_TYPE, "text/html")
+        //     .header("HX-Retarget", "#error-message")
+        //     .header("HX-Reswap", "innerHTML")
+        //     .body(Body::new(renderers::render_error_message(
+        //         "email or password is invalid. Please try again.",
+        //     ).0))
+        //     .unwrap();
+        // return renderers::render_error_message("email or password is invalid. Please try again.");
     }
-    state
-        .lock()
-        .await
+    state_ref
         .state
         .change_state(StateNames::DashBoard.as_string());
     let view_params = Some(views::types::ViewsParams {
-        user: Some(take(db_types.get_user())),
-        itineary: Some(take(db_types.get_itineary())),
+        user: Some(take(state_ref.get_db_types().get_user())),
+        itineary: Some(take(state_ref.get_db_types().get_itineary())),
     });
-    // return utils::create_html_response(
+    let mut h = HeaderMap::new();
+    h.insert(CONTENT_TYPE, "text/html".parse().unwrap());
+    return (
+        StatusCode::OK,
+        h,
+        renderers::handle_page_render(&state_ref.state.get_state(), headers, view_params),
+    );
+    // utils::create_html_response(
     //     StatusCode::OK,
     //     [
     //         ("Content-type", "text/html"),
     //         ("HX-Location", "/dash-baord"),
     //     ],
     //     renderers::handle_page_render(&state.lock().await.state.get_state(), headers, view_params),
-    // );
-    return renderers::handle_page_render(&state_ref.state.get_state(), headers, view_params);
+    // )
+    // return renderers::handle_page_render(&state_ref.state.get_state(), headers, view_params);
     // (
     //     StatusCode::OK,
     //     [
     //         ("Content-type", "text/html"),
     //         ("HX-Location", "/dash-board"),
     //     ],
-    //     renderers::handle_page_render(&state.lock().unwrap().state.get_state(), headers, view_params),
+    //     renderers::handle_page_render(&state.lock().await.state.get_state(), headers, view_params),
     // )
 }
 
@@ -107,19 +132,49 @@ pub async fn handle_logout(
 }
 
 pub async fn get_image(Path(resource_id): Path<String>) -> impl IntoResponse {
-    let path = &format!("../../images/{}", resource_id);
-    info!("handlers::getImage()::resource_id:{}", resource_id);
-    let file = match tokio::fs::File::open(path).await {
+    let current_dir = match env::current_dir() {
+        Ok(dir) => dir,
+        Err(e) => {
+            error!("handlers::getImage()::dir does not exist: {}", e);
+            return Err((StatusCode::BAD_REQUEST, "cannout open".to_string()));
+        }
+    };
+    let dir_name = &std::path::Path::join(
+        &current_dir,
+        &CONFIG.get().unwrap().get_envs().assets_location,
+    );
+    if !std::path::Path::exists(&dir_name) {
+        error!("handlers::getImage()::dir does not exist");
+        return Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "dir does not exist cannot get image".to_string(),
+        ));
+    }
+    let full_path = std::path::Path::join(std::path::Path::new(dir_name), resource_id.clone());
+    let path = full_path
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .into_owned();
+    info!(
+        "handlers::getImage()::path:{}, resource_id:{}",
+        path, resource_id
+    );
+    let file = match tokio::fs::File::open(path.clone()).await {
         Ok(file) => file,
-        Err(err) => return Err((StatusCode::NOT_FOUND, format!("image not found: {}", err))),
+        Err(err) => {
+            error!("MIME type cannot be determined");
+            return Err((StatusCode::BAD_REQUEST, "cannout open".to_string()));
+        }
     };
     let content_type = match mime_guess::from_path(&path).first_raw() {
         Some(mime) => mime,
         None => {
+            error!("MIME type cannot be determined");
             return Err((
                 StatusCode::BAD_REQUEST,
                 "MIME Type couldn't be determined".to_string(),
-            ))
+            ));
         }
     };
     let stream = tokio_util::io::ReaderStream::new(file);

@@ -206,8 +206,8 @@ async fn connect_and_populate_db() -> Result<(), Error> {
             user_name VARCHAR (50) UNIQUE NOT NULL,
             password VARCHAR (50) NOT NULL,
             email VARCHAR (255) UNIQUE NOT NULL,
-            created_at DATE NOT NULL,
-            last_login DATE,
+            created_at timestamptz NOT NULL,
+            last_login timestamptz,
             dob VARCHAR (12)
         );"
     );
@@ -224,10 +224,10 @@ async fn connect_and_populate_db() -> Result<(), Error> {
             user_id INTEGER REFERENCES users (id),
             destination VARCHAR (255),
             resource_id VARCHAR (255),
-            departure DATE NOT NULL,
-            arrival DATE NOT NULL,
+            departure timestamptz NOT NULL,
+            arrival timestamptz NOT NULL,
             over_all_budget VARCHAR (50),
-            created_at DATE NOT NULL
+            created_at timestamptz NOT NULL
         );"
     );
     let _ = match pool.execute(query(&create_itineary_query)).await {

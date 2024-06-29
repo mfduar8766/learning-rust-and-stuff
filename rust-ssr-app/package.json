@@ -1,10 +1,10 @@
 {
-  "name": "htmx-todo",
+  "name": "htmx-ssr-itineary-app",
   "version": "1.0.0",
   "description": "",
-  "main": "./rust-ssr-app/templates/js/index.js",
+  "main": "templates/js/index.js",
   "scripts": {
-    "tailwind": "npx tailwindcss -i ./rust-ssr-app/templates/index.css -o ./rust-ssr-app/dist/index.css --watch",
+    "tailwind": "npx tailwindcss -i templates/index.css -o dist/index.css --watch",
     "client": "npx webpack --watch --mode development",
     "server": " cd rust-ssr-app && cargo watch -x run -w src",
     "start": "npm run tailwind && npm run client && npm run server"

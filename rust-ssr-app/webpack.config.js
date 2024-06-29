@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  entry: './rust-ssr-app/templates/js/index.js',
+  entry: './templates/js/index.js',
   devtool: 'inline-source-map', // This option controls if and how source maps are generated.
   module: {
     rules: [
@@ -18,7 +18,7 @@ module.exports = {
   },
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, './rust-ssr-app/dist'),
+    path: path.resolve(__dirname, 'dist'),
   },
   devServer: {
     contentBase: './dist',
