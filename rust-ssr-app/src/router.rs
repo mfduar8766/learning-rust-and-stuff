@@ -37,6 +37,6 @@ pub fn create_router(postgres_pool: Pool<Postgres>) -> Router {
         .with_state(Arc::new(Mutex::new(state::ApplicationState::new(db))))
         .layer(c.create_cors())
         .layer(TraceLayer::new_for_http())
-        .nest_service("/assets", ServeDir::new("../dist"));
+        .nest_service("/assets", ServeDir::new("dist"));
     return app;
 }

@@ -1,11 +1,11 @@
 {% macro logInForm(api_url) %}
-<div class="w-full max-w-xs">
+<div class="container w-full h-full">
   <form
+    class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
     hx-post="{{api_url}}login"
     hx-target="#app"
     id="log-in-form"
     hx-swap="outerHTML"
-    class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
   >
     <div class="mb-4">
       <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
@@ -30,6 +30,15 @@
         placeholder="***"
         name="password"
       />
+      <div id="htmx-alert" class="alert alert-warning sticky-top"></div>
+      <p
+        hx-swap="innerHTML"
+        hx-target-5*="#serious-errors"
+        hx-target-404="#not-found"
+        hx-target-400="#error-message"
+        class="text-red-500 text-xs italic"
+        id="error-message"
+      ></p>
       <!-- <p class="text-red-500 text-xs italic">Please choose a password.</p> -->
     </div>
     <div class="flex flex-col items-center">

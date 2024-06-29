@@ -68,16 +68,16 @@ handle_start () {
     echo "Creating build of postgres-seed..." &
     COMPOSE_HTTP_TIMEOUT=500 docker-compose up --build -V &
     # if [ "$( docker container inspect -f '{{.State.Status}}' $container_name )" = "running" ]; then
-    echo "Cd into postgres-seed and run app..." &
+    echo "Cd into postgres-seed build and run app..." &
     $changeDirToPostgresSeed
-    cargo run &
+    cargo run build &
     wait
     $changeDirToRoot
     wait
-    # if [ test -d /postgres-seed/target/debug ]; then
-    #   echo "Directory /postgres-seed/target/debug exists executing binary..." &
-    #   cargo run /posrgres-seed/target/debug/postgres-seed &
-    # fi
+    if [ test -d /postgres-seed/target/debug ]; then
+      echo "Directory /postgres-seed/target/debug exists executing binary..." &
+      cargo run /posrgres-seed/target/debug/postgres-seed &
+    fi
     # fi
     # UNTIL I CAN FIGURE OUT WHY RUST BILD COMMAND FAILS ON DOKCERFILE
     # docker stop postgres-seed &
@@ -86,16 +86,16 @@ handle_start () {
     echo "Running docker-compose.yaml file and starting services..." &
     COMPOSE_HTTP_TIMEOUT=500 docker-compose up &
     # if [ "$( docker container inspect -f '{{.State.Status}}' $container_name )" = "running" ]; then
-    echo "Cd into postgres-seed and run app..." &
+    echo "Cd into postgres-seed build and run app..." &
     $changeDirToPostgresSeed
-    cargo run &
+    cargo run build &
     wait
     $changeDirToRoot
     wait
-    # if [ test -d /postgres-seed/target/debug ]; then
-    #   echo "Directory /postgres-seed/target/debug exists executing binary..." &
-    #   cargo run /posrgres-seed/target/debug/postgres-seed &
-    # fi
+    if [ test -d /postgres-seed/target/debug ]; then
+      echo "Directory /postgres-seed/target/debug exists executing binary..." &
+      cargo run /posrgres-seed/target/debug/postgres-seed &
+    fi
   # fi
   # UNTIL I CAN FIGURE OUT WHY RUST BILD COMMAND FAILS ON DOKCERFILE
   # docker stop postgres-seed &

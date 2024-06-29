@@ -64,7 +64,6 @@ impl Db {
                 let users = &c.get_envs().db_users;
                 let check_user_name_and_password =
                     format!("SELECT * FROM {} WHERE email = $1 AND password = $2", users);
-                info!("QUERY: {}", check_user_name_and_password);
                 match sqlx::query_as::<_, Users>(&check_user_name_and_password)
                     .bind(email)
                     .bind(password)
@@ -73,7 +72,6 @@ impl Db {
                 {
                     Ok(users) => {
                         let itineary = &c.get_envs().db_itineary;
-                        info!("db::authenticate()::user:{:?}", users);
                         self.user = users;
                         let get_itinearies =
                             format!("SELECT * FROM {} WHERE user_id = $1", itineary);

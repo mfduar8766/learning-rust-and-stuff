@@ -1,5 +1,5 @@
 **/dist
 /node_modules
 **/Logs/**
-**/target/*
-**/target/*
+**/rust-ssr-app/target/**
+**/postgres-seed/target/**

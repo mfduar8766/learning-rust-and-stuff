@@ -16,6 +16,7 @@ pub struct Envs {
     pub db_url: String,
     pub max_db_connection_retries: i32,
     pub max_connections: u32,
+    pub assets_location: String,
 }
 
 impl Default for Envs {
@@ -37,6 +38,7 @@ impl Default for Envs {
                 .unwrap_or(1.to_string())
                 .parse::<u32>()
                 .unwrap(),
+            assets_location: env::var("ASSETS_LOCATION").unwrap_or("assets".to_string()),
         };
     }
 }
@@ -139,6 +141,8 @@ impl Config {
             HeaderName::from_static("hx-redirect"),
             HeaderName::from_static("hx-location"),
             HeaderName::from_static("hx-trigger"),
+            HeaderName::from_static("hx-retarget"),
+            HeaderName::from_static("hx-reswap"),
             ACCESS_CONTROL_ALLOW_ORIGIN,
             CONTENT_TYPE,
             ACCEPT,
